@@ -1,6 +1,6 @@
 export const environment = {
     production: false,
-
+    apiUrl: 'https://<TU_API_GATEWAY_ID>.execute-api.us-east-1.amazonaws.com/api',
     azure: {
 // ID de la aplicación (SPA) registrada en Microsoft Entra ID
 clientId: 'e03479f6-d22d-4624-aa81-6e724d570329',

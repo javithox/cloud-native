@@ -1,6 +1,11 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, Routes } from '@angular/router';
+import 'zone.js';
+import { appConfig } from './app/app.config';
+import { AppComponent } from './app/app.component';
 
+bootstrapApplication(AppComponent, appConfig)
+  .catch((err) => console.error(err));
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
@@ -16,8 +21,6 @@ import {
   MsalInterceptor,
   MsalService
 } from '@azure/msal-angular';
-
-import { AppComponent } from './app/app.component';
 
 import {
   msalInstanceFactory,
