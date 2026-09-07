@@ -2,23 +2,25 @@ package com.javier.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class RabbitMQConfig {
+public class rabbitMQConfig {
 
-    @Value("${campuslab.rabbitmq.exchanges.direct}")
+    // Se agregan valores por defecto (:nombre) para evitar errores si falta el YAML
+    @Value("${campuslab.rabbitmq.exchanges.direct:booking.direct.exchange}")
     private String directExchangeName;
 
-    @Value("${campuslab.rabbitmq.exchanges.topic}")
+    @Value("${campuslab.rabbitmq.exchanges.topic:booking.topic.exchange}")
     private String topicExchangeName;
 
-    @Value("${campuslab.rabbitmq.exchanges.dlx}")
+    @Value("${campuslab.rabbitmq.exchanges.dlx:booking.dlx.exchange}")
     private String dlxExchangeName;
 
-    // Exchanges
+    // --- Exchanges ---
     @Bean
     public DirectExchange directExchange() {
         return new DirectExchange(directExchangeName);
@@ -34,7 +36,7 @@ public class RabbitMQConfig {
         return new DirectExchange(dlxExchangeName);
     }
 
-    // Colas Principales
+    // --- Colas Principales con DLX ---
     @Bean
     public Queue emailQueue() {
         return QueueBuilder.durable("q.cmd.email")
@@ -59,7 +61,7 @@ public class RabbitMQConfig {
                 .build();
     }
 
-    // Colas DLQ
+    // --- Colas DLQ ---
     @Bean
     public Queue emailDlq() {
         return QueueBuilder.durable("q.cmd.email.dlq").build();
@@ -75,7 +77,7 @@ public class RabbitMQConfig {
         return QueueBuilder.durable("q.cmd.voucher.dlq").build();
     }
 
-    // Bindings
+    // --- Bindings Principales (Direct Exchange) ---
     @Bean
     public Binding emailBinding(Queue emailQueue, DirectExchange directExchange) {
         return BindingBuilder.bind(emailQueue).to(directExchange).with("email.send");
@@ -91,6 +93,23 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(voucherQueue).to(directExchange).with("voucher.gen");
     }
 
+    // --- Bindings DLQ (Dead Letter Exchange) ---
+    @Bean
+    public Binding emailDlqBinding(Queue emailDlq, @Qualifier("deadLetterExchange") DirectExchange deadLetterExchange) {
+        return BindingBuilder.bind(emailDlq).to(deadLetterExchange).with("email.dlq");
+    }
+
+    @Bean
+    public Binding prepDlqBinding(Queue prepDlq, @Qualifier("deadLetterExchange") DirectExchange deadLetterExchange) {
+        return BindingBuilder.bind(prepDlq).to(deadLetterExchange).with("prep.dlq");
+    }
+
+    @Bean
+    public Binding voucherDlqBinding(Queue voucherDlq, @Qualifier("deadLetterExchange") DirectExchange deadLetterExchange) {
+        return BindingBuilder.bind(voucherDlq).to(deadLetterExchange).with("voucher.dlq");
+    }
+
+    // --- Conversor JSON ---
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
