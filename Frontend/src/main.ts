@@ -1,16 +1,13 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, Routes } from '@angular/router';
-import 'zone.js';
-import { appConfig } from './app/app.config';
-import { AppComponent } from './app/app.component';
-
-bootstrapApplication(AppComponent, appConfig)
-  .catch((err) => console.error(err));
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import {
-  HTTP_INTERCEPTORS,
-  provideHttpClient,
-  withInterceptorsFromDi
+  HTTP_INTERCEPTORS
 } from '@angular/common/http';
+
+import 'zone.js';
+
+import { AppComponent } from './app/app.component';
 
 import {
   MSAL_GUARD_CONFIG,
@@ -28,23 +25,10 @@ import {
   msalInterceptorConfigFactory
 } from './app/config/msal.config';
 
-
-const routes: Routes = [
-  {
-    path: '',
-    component: AppComponent,
-    canActivate: [MsalGuard]
-  },
-
-  {
-    path: '**',
-    redirectTo: ''
-  }
-];
+const routes: Routes = [];
 
 bootstrapApplication(AppComponent, {
   providers: [
-
     provideRouter(routes),
 
     provideHttpClient(
@@ -76,5 +60,4 @@ bootstrapApplication(AppComponent, {
     MsalService,
     MsalBroadcastService
   ]
-})
-.catch(err => console.error(err));
+}).catch(err => console.error(err));

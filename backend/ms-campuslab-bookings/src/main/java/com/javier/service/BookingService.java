@@ -27,10 +27,11 @@ public class BookingService {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${campuslab.rabbitmq.exchanges.direct}")
+    // Añadimos valores por defecto después de los dos puntos (: valor)
+    @Value("${campuslab.rabbitmq.exchanges.direct:booking.direct.exchange}")
     private String directExchange;
 
-    @Value("${campuslab.kafka.topics.booking-events}")
+    @Value("${campuslab.kafka.topics.booking-events:booking-events-topic}")
     private String bookingEventsTopic;
 
     @Transactional
@@ -65,7 +66,9 @@ public class BookingService {
         // Validar Regla del Negocio
         if (!currentStatus.canTransitionTo(newStatus)) {
             throw new IllegalStateException(
-                    String.format("Transición de estado inválida: No se puede cambiar de %s a %s[cite: 1]", currentStatus, newStatus)
+                    String.format("Transición de estado inválida: No se puede cambiar de %s a %s[cite: 1]",
+                            currentStatus,
+                            newStatus)
             );
         }
 

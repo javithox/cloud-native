@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
+@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class BookingController {
 

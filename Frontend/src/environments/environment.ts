@@ -1,5 +1,7 @@
 export const environment = {
     production: false,
+    apiCatalogUrl: 'http://localhost:8081/api/',
+    apiBookingsUrl: 'http://localhost:8082/api/',
     apiUrl: 'https://<TU_API_GATEWAY_ID>.execute-api.us-east-1.amazonaws.com/api',
     azure: {
 // ID de la aplicación (SPA) registrada en Microsoft Entra ID

@@ -1,6 +1,9 @@
 package com.javier.config;
 
 import org.springframework.amqp.core.*;
+// Elimina la versión "2"
+
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class rabbitMQConfig {
+public class RabbitMQConfig {
 
     // Se agregan valores por defecto (:nombre) para evitar errores si falta el YAML
     @Value("${campuslab.rabbitmq.exchanges.direct:booking.direct.exchange}")
@@ -111,7 +114,7 @@ public class rabbitMQConfig {
 
     // --- Conversor JSON ---
     @Bean
-    public Jackson2JsonMessageConverter messageConverter() {
+    public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 }

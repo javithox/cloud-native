@@ -1,5 +1,6 @@
 package com.javier.service;
 import com.javier.dto.CatalogDTOs.*;
+import com.javier.model.Resource;
 import com.javier.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,13 +1,37 @@
 server:
-  port: 8082
+  port: 8081
+
 spring:
   application:
-    name: ms-campuslab-bookings
+    name: ms-campuslab-catalog
+
   datasource:
-    url: jdbc:h2:mem:bookingsdb;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:catalogdb;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
     username: sa
     password:
   h2:
     console:
       enabled: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+campuslab:
+  rabbitmq:
+    exchanges:
+      direct: catalog.direct.exchange
+      topic: catalog.topic.exchange
+      dlx: catalog.dlx.exchange
+  kafka:
+    topics:
+      catalog-events: catalog-events-topic

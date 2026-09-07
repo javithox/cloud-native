@@ -1,7 +1,7 @@
 package com.javier.model;
 
 
-public enum ookingStatus {
+public enum BookingStatus {
     SOLICITADA,
     APROBADA,
     EN_PREPARACION,
