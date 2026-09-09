@@ -1,0 +1,18 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Catálogo</p>
+      <h1>Recursos disponibles</h1>
+    </div>
+  </header>
+
+  <div class="cards-grid">
+    @for (resource of resources; track resource.name) {
+      <article class="resource-card">
+        <span class="tag">{{ resource.type }}</span>
+        <h3>{{ resource.name }}</h3>
+        <p>{{ resource.status }}</p>
+      </article>
+    }
+  </div>
+</section>

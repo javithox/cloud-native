@@ -1,0 +1,17 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Dashboard</p>
+      <h1>Resumen para {{ currentRole }}</h1>
+    </div>
+  </header>
+
+  <div class="stats-grid">
+    @for (metric of metrics(); track metric.label) {
+      <article class="stat-card">
+        <span>{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+      </article>
+    }
+  </div>
+</section>

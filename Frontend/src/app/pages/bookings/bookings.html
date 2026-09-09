@@ -1,0 +1,32 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Reservas</p>
+      <h1>Gestión de reservas</h1>
+    </div>
+    <button type="button" class="primary-action">Crear reserva</button>
+  </header>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Recurso</th>
+          <th>Usuario</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (booking of bookings; track booking.id) {
+          <tr>
+            <td>{{ booking.id }}</td>
+            <td>{{ booking.resource }}</td>
+            <td>{{ booking.user }}</td>
+            <td><span class="status">{{ booking.status }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

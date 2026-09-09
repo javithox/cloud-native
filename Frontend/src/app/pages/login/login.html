@@ -1,0 +1,27 @@
+<section class="auth-page">
+  <div class="auth-card">
+    <p class="eyebrow">CampusLab</p>
+    <h1>Accede a tu portal</h1>
+    <p class="subtitle">Inicia sesión con Microsoft para gestionar reservas, recursos y trazabilidad.</p>
+
+    <div class="role-picker">
+      <label>Selecciona tu rol</label>
+      <div class="role-options">
+        @for (role of roles; track role) {
+          <button
+            type="button"
+            class="role-button"
+            [class.selected]="selectedRole === role"
+            (click)="selectedRole = role"
+          >
+            {{ role }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <button type="button" class="ms-login" (click)="loginWithMicrosoft()">
+      Iniciar sesión con Microsoft
+    </button>
+  </div>
+</section>

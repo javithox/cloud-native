@@ -1,0 +1,37 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Auditoría</p>
+      <h1>Trazabilidad de reservas</h1>
+    </div>
+  </header>
+
+  <div class="filters">
+    <span>Usuario</span>
+    <span>Fechas</span>
+    <span>Tipo de evento</span>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (event of events; track event.user + event.date) {
+          <tr>
+            <td>{{ event.user }}</td>
+            <td>{{ event.date }}</td>
+            <td>{{ event.type }}</td>
+            <td>{{ event.outcome }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

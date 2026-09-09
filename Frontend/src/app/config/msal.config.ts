@@ -13,6 +13,16 @@ import {
 import { environment } from '../../environments/environment';
 
 export function msalInstanceFactory(): PublicClientApplication {
+  if (typeof window === 'undefined') {
+    return {
+      getAllAccounts: () => [],
+      getActiveAccount: () => null,
+      setActiveAccount: () => undefined,
+      loginRedirect: () => Promise.resolve(),
+      logoutRedirect: () => Promise.resolve(),
+    } as unknown as PublicClientApplication;
+  }
+
   return new PublicClientApplication({
     auth: {
       clientId: environment.azure.clientId,

@@ -1,0 +1,17 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Reportería</p>
+      <h1>Indicadores de operación</h1>
+    </div>
+  </header>
+
+  <div class="report-list">
+    @for (row of rows; track row.label) {
+      <article class="report-item">
+        <span>{{ row.label }}</span>
+        <strong>{{ row.value }}</strong>
+      </article>
+    }
+  </div>
+</section>
