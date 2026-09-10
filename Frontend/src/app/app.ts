@@ -9,6 +9,8 @@ import { AuthService, AppRole } from './services/auth.service';
   styleUrl: './app.scss',
 })
 export class App {
+  menuOpen = false;
+
   readonly navItems: Array<{ label: string; path: string; roles: AppRole[] }> = [
     { label: 'Dashboard', path: '/dashboard', roles: ['Admin', 'Técnico', 'Estudiante', 'Auditor'] },
     { label: 'Reservas', path: '/bookings', roles: ['Admin', 'Técnico', 'Estudiante'] },
@@ -25,7 +27,16 @@ export class App {
     return this.navItems.filter((item) => item.roles.includes(currentRole));
   }
 
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu(): void {
+    this.menuOpen = false;
+  }
+
   logout(): void {
+    this.menuOpen = false;
     this.authService.logout();
   }
 }

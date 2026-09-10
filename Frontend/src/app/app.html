@@ -1,6 +1,22 @@
 <div class="app-shell">
   @if (authService.isLoggedIn()) {
-    <aside class="sidebar">
+    <header class="topbar">
+      <button type="button" class="menu-toggle" aria-label="Abrir menú" (click)="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="topbar-brand">
+        <span class="brand-mark">C</span>
+        <div>
+          <strong>CampusLab</strong>
+          <small>{{ authService.getRole() }}</small>
+        </div>
+      </div>
+    </header>
+
+    <aside class="sidebar" [class.sidebar-open]="menuOpen">
       <div class="brand">
         <span class="brand-mark">C</span>
         <div>
@@ -11,7 +27,7 @@
 
       <nav class="nav">
         @for (item of visibleNavItems(); track item.path) {
-          <a [routerLink]="item.path" routerLinkActive="active">{{ item.label }}</a>
+          <a [routerLink]="item.path" routerLinkActive="active" (click)="closeMenu()">{{ item.label }}</a>
         }
       </nav>
 
@@ -19,7 +35,7 @@
     </aside>
   }
 
-  <main class="content-shell">
+  <main class="content-shell" [class.content-shell-shifted]="authService.isLoggedIn() && menuOpen">
     <router-outlet />
   </main>
 </div>
