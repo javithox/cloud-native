@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -23,6 +24,7 @@ import java.util.List;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final CatalogClient catalogClient;
     private final RabbitTemplate rabbitTemplate;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
@@ -36,11 +38,25 @@ public class BookingService {
 
     @Transactional
     public BookingResponse createBooking(CreateBookingRequest request) {
+        if (!request.getEndTime().isAfter(request.getStartTime())) {
+            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio");
+        }
+        if (request.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("La reserva debe comenzar en el futuro");
+        }
+        if (bookingRepository.existsOverlappingBooking(request.getResourceId(), request.getStartTime(),
+                request.getEndTime(), Arrays.asList(BookingStatus.CANCELADA, BookingStatus.DEVUELTA))) {
+            throw new IllegalStateException("El recurso ya está reservado en el horario solicitado");
+        }
+        CatalogClient.ResourceInfo resource = catalogClient.getResource(request.getResourceId());
+        if (resource == null || !Boolean.TRUE.equals(resource.active())) {
+            throw new IllegalArgumentException("El recurso seleccionado no existe o está inactivo");
+        }
         Booking booking = Booking.builder()
                 .studentId(request.getStudentId())
                 .studentEmail(request.getStudentEmail())
                 .resourceId(request.getResourceId())
-                .resourceName(request.getResourceName())
+                .resourceName(resource.name())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
                 .notes(request.getNotes())
@@ -72,6 +88,13 @@ public class BookingService {
             );
         }
 
+        if (newStatus == BookingStatus.APROBADA) {
+            catalogClient.reserve(booking.getResourceId(), 1);
+        } else if (newStatus == BookingStatus.CANCELADA && currentStatus == BookingStatus.APROBADA) {
+            catalogClient.release(booking.getResourceId(), 1);
+        } else if (newStatus == BookingStatus.DEVUELTA) {
+            catalogClient.release(booking.getResourceId(), 1);
+        }
         booking.setStatus(newStatus);
         booking = bookingRepository.save(booking);
 
@@ -91,7 +114,17 @@ public class BookingService {
     }
 
     public List<BookingResponse> getBookings(BookingStatus status, LocalDateTime from, LocalDateTime to) {
-        return bookingRepository.filterBookings(status, from, to)
+        List<Booking> bookings;
+        if (status != null && from != null && to != null) {
+            bookings = bookingRepository.findByStatusAndStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(status, from, to);
+        } else if (status != null) {
+            bookings = bookingRepository.findByStatusOrderByStartTimeAsc(status);
+        } else if (from != null && to != null) {
+            bookings = bookingRepository.findByStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(from, to);
+        } else {
+            bookings = bookingRepository.findAllByOrderByStartTimeAsc();
+        }
+        return bookings
                 .stream()
                 .map(this::mapToResponse)
                 .toList();

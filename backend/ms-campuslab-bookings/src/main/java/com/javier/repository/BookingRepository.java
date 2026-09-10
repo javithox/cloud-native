@@ -15,10 +15,21 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByStatus(BookingStatus status);
 
-    @Query("SELECT b FROM Booking b WHERE (:status IS NULL OR b.status = :status) " +
-            "AND (:from IS NULL OR b.startTime >= :from) " +
-            "AND (:to IS NULL OR b.endTime <= :to)")
-    List<Booking> filterBookings(@Param("status") BookingStatus status,
-                                 @Param("from") LocalDateTime from,
-                                 @Param("to") LocalDateTime to);
+    @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.resourceId = :resourceId " +
+            "AND b.status NOT IN :excludedStatuses " +
+            "AND b.startTime < :endTime AND b.endTime > :startTime")
+    boolean existsOverlappingBooking(@Param("resourceId") Long resourceId,
+                                     @Param("startTime") LocalDateTime startTime,
+                                     @Param("endTime") LocalDateTime endTime,
+                                     @Param("excludedStatuses") List<BookingStatus> excludedStatuses);
+
+    List<Booking> findAllByOrderByStartTimeAsc();
+
+    List<Booking> findByStatusOrderByStartTimeAsc(BookingStatus status);
+
+    List<Booking> findByStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(
+            LocalDateTime from, LocalDateTime to);
+
+    List<Booking> findByStatusAndStartTimeGreaterThanEqualAndEndTimeLessThanEqualOrderByStartTimeAsc(
+            BookingStatus status, LocalDateTime from, LocalDateTime to);
 }

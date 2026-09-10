@@ -11,8 +11,10 @@
       <article class="resource-card">
         <span class="tag">{{ resource.type }}</span>
         <h3>{{ resource.name }}</h3>
-        <p>{{ resource.status }}</p>
+        <p>{{ resource.description || 'Recurso académico' }}</p>
+        <strong>{{ resource.availableStock }} / {{ resource.totalStock }} disponibles</strong>
       </article>
     }
   </div>
+  @if (error) { <p class="error">{{ error }}</p> }
 </section>

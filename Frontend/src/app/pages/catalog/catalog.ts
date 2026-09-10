@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { CampusLabApiService, Resource } from '../../services/campuslab-api.service';
 
 @Component({
   selector: 'app-catalog-page',
@@ -6,10 +7,15 @@ import { Component } from '@angular/core';
   templateUrl: './catalog.html',
   styleUrl: './catalog.scss',
 })
-export class CatalogPage {
-  readonly resources = [
-    { name: 'Laboratorio 3', type: 'Laboratorio', status: 'Disponible' },
-    { name: 'Equipo de audio', type: 'Equipo', status: 'En mantenimiento' },
-    { name: 'Insumos de laboratorio', type: 'Insumos', status: 'Bajo stock' },
-  ];
+export class CatalogPage implements OnInit {
+  private readonly api = inject(CampusLabApiService);
+  resources: Resource[] = [];
+  error = '';
+
+  ngOnInit(): void {
+    this.api.resources().subscribe({
+      next: (resources) => this.resources = resources,
+      error: () => this.error = 'No fue posible cargar el catálogo.',
+    });
+  }
 }

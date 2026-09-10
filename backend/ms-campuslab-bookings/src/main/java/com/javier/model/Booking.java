@@ -5,6 +5,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "bookings", indexes = {
+        @Index(name = "idx_booking_status", columnList = "status"),
+        @Index(name = "idx_booking_resource_window", columnList = "resource_id,start_time,end_time")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,16 +19,16 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String studentId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 180)
     private String studentEmail;
 
     @Column(nullable = false)
     private Long resourceId; // ID del Laboratorio o Equipo del Catálogo
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 180)
     private String resourceName;
 
     @Column(nullable = false)
@@ -37,8 +41,10 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status;
 
+    @Column(length = 1000)
     private String notes;
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -56,10 +62,4 @@ public class Booking {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public BookingStatus getStatus( BookingStatus status) {
-        return getStatus(status);
-    }
-    public BookingStatus setStatus(BookingStatus newStatus){
-        return setStatus(newStatus);
-    }
 }

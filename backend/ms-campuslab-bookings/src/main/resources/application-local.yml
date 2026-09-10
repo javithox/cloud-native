@@ -1,17 +1,14 @@
 server:
-  port: 8081
+  port: 8082
 
 spring:
   application:
-    name: ms-campuslab-catalog
+    name: ms-campuslab-bookings
   datasource:
-    url: jdbc:h2:file:./data/catalogdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:file:./data/bookingsdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
-  h2:
-    console:
-      enabled: true
   jpa:
     hibernate:
       ddl-auto: update
@@ -28,11 +25,13 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
 
 campuslab:
+  catalog:
+    base-url: ${CATALOG_BASE_URL:http://localhost:8081}
   rabbitmq:
     exchanges:
-      direct: catalog.direct.exchange
-      topic: catalog.topic.exchange
-      dlx: catalog.dlx.exchange
+      direct: booking.direct.exchange
+      topic: booking.topic.exchange
+      dlx: booking.dlx.exchange
   kafka:
     topics:
-      catalog-events: catalog-events-topic
+      booking-events: booking-events-topic

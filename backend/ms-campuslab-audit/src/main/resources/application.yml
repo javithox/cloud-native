@@ -5,13 +5,10 @@ spring:
   application:
     name: ms-campuslab-audit
   datasource:
-    url: jdbc:h2:mem:auditdb;DB_CLOSE_DELAY=-1;MODE=LEGACY
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:campuslab}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:campuslab}
+    password: ${DB_PASSWORD:campuslab}
   jpa:
     hibernate:
       ddl-auto: update

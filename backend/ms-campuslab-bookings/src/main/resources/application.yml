@@ -4,33 +4,29 @@ server:
 spring:
   application:
     name: ms-campuslab-bookings
-
-  # Base de Datos H2
   datasource:
-    url: jdbc:h2:mem:bookingsdb;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:file:/home/oem/Desktop/cloud-native/backend/data/bookingsdb;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
-  h2:
-    console:
-      enabled: true
-
-  # Configuración de Kafka (Broker local)
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
-  # Configuración de RabbitMQ (Broker local)
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
-# Propiedades personalizadas requeridas por la aplicación
 campuslab:
+  catalog:
+    base-url: ${CATALOG_BASE_URL:http://localhost:8081}
   rabbitmq:
     exchanges:
       direct: booking.direct.exchange

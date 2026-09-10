@@ -35,8 +35,11 @@ public class ResourceService {
 
     @Transactional
     public ResourceResponse updateStock(Long id, UpdateStockRequest request) {
-        Resource resource = resourceRepository.findById(id)
+        Resource resource = resourceRepository.findLockedById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Recurso no encontrado con ID: " + id));
+        if (!Boolean.TRUE.equals(resource.getActive())) {
+            throw new IllegalStateException("El recurso no está activo");
+        }
 
         int newAvailable = resource.getAvailableStock() + request.getQuantity();
 

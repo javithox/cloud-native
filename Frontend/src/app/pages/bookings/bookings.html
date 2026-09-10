@@ -4,7 +4,7 @@
       <p class="eyebrow">Reservas</p>
       <h1>Gestión de reservas</h1>
     </div>
-    <button type="button" class="primary-action">Crear reserva</button>
+    <button type="button" class="primary-action" (click)="reload()">Actualizar</button>
   </header>
 
   <div class="table-card">
@@ -13,20 +13,24 @@
         <tr>
           <th>ID</th>
           <th>Recurso</th>
-          <th>Usuario</th>
+          <th>Horario</th>
           <th>Estado</th>
+          <th>Acción</th>
         </tr>
       </thead>
       <tbody>
         @for (booking of bookings; track booking.id) {
           <tr>
             <td>{{ booking.id }}</td>
-            <td>{{ booking.resource }}</td>
-            <td>{{ booking.user }}</td>
+            <td>{{ booking.resourceName }}</td>
+            <td>{{ booking.startTime | date:'short' }} - {{ booking.endTime | date:'shortTime' }}</td>
             <td><span class="status">{{ booking.status }}</span></td>
+            <td><button type="button" (click)="advance(booking)">Avanzar</button></td>
           </tr>
         }
       </tbody>
     </table>
+    @if (loading) { <p>Cargando reservas…</p> }
+    @if (error) { <p class="error">{{ error }}</p> }
   </div>
 </section>

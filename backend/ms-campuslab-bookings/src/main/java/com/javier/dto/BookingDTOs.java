@@ -1,6 +1,5 @@
 package com.javier.dto;
 import com.javier.model.BookingStatus;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -20,7 +19,6 @@ public class BookingDTOs {
         @NotNull(message = "El ID del recurso es obligatorio")
         private Long resourceId;
 
-        @NotBlank(message = "El nombre del recurso es obligatorio")
         private String resourceName;
 
         @NotNull(message = "La fecha de inicio es obligatoria")
