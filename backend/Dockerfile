@@ -6,7 +6,7 @@ WORKDIR /build
 # Copiar archivos de configuración
 COPY pom.xml .
 COPY .mvn/ .mvn/
-COPY mvnw mvnw.cmd ./
+COPY mvnw* ./
 
 # Copiar módulos
 COPY ms-campuslab-bookings/ ms-campuslab-bookings/
