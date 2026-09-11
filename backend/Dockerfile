@@ -1,6 +1,10 @@
+# Definir el nombre del módulo (se puede sobrescribir en docker-compose.yml con build.args)
+ARG MODULE_NAME=ms-campuslab-bookings
+
 # Stage 1: Build
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
+ARG MODULE_NAME
 WORKDIR /build
 
 # Copiar archivos de configuración
@@ -16,16 +20,17 @@ COPY ms-campuslab-audit/ ms-campuslab-audit/
 COPY ms-campuslab-report/ ms-campuslab-report/
 COPY src/ src/
 
-# Compilar el proyecto
-RUN mvn clean package -DskipTests
+# Compilar únicamente el módulo deseado y sus dependencias (más rápido)
+RUN mvn clean package -pl ${MODULE_NAME} -am -DskipTests
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine
 
+ARG MODULE_NAME
 WORKDIR /app
 
-# Copiar JAR del stage anterior
-COPY --from=builder /build/target/backend-*.jar app.jar
+# Copiar JAR generado dentro de la carpeta del módulo especificado
+COPY --from=builder /build/${MODULE_NAME}/target/*.jar app.jar
 
 # Crear directorio para datos
 RUN mkdir -p /data
@@ -33,8 +38,8 @@ RUN mkdir -p /data
 # Variable de entorno para el perfil de Spring
 ENV SPRING_PROFILES_ACTIVE=docker
 
-# Exponer puertos (ajusta según tus microservicios)
-EXPOSE 8080 8081 8082 8083 8084 8085
+# Exponer puerto
+EXPOSE 8080
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
