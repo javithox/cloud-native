@@ -1,49 +1,46 @@
-# Definir el nombre del módulo (se puede sobrescribir en docker-compose.yml con build.args)
+# Definir el módulo por defecto
 ARG MODULE_NAME=ms-campuslab-bookings
 
-# Stage 1: Build
+# --- Stage 1: Build ---
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
 ARG MODULE_NAME
 WORKDIR /build
 
-# Copiar archivos de configuración
+# 1. Copiar archivos POM y dependencias primero para aprovechar el caché de Docker
 COPY pom.xml .
-COPY .mvn/ .mvn/
-COPY mvnw* ./
+COPY ms-campuslab-bookings/pom.xml ms-campuslab-bookings/
+COPY ms-campuslab-catalog/pom.xml ms-campuslab-catalog/
+COPY ms-campuslab-notify/pom.xml ms-campuslab-notify/
+COPY ms-campuslab-audit/pom.xml ms-campuslab-audit/
+COPY ms-campuslab-report/pom.xml ms-campuslab-report/
 
-# Copiar módulos
-COPY ms-campuslab-bookings/ ms-campuslab-bookings/
-COPY ms-campuslab-catalog/ ms-campuslab-catalog/
-COPY ms-campuslab-notify/ ms-campuslab-notify/
-COPY ms-campuslab-audit/ ms-campuslab-audit/
-COPY ms-campuslab-report/ ms-campuslab-report/
-COPY src/ src/
+# Descargar dependencias en caché (no se volverán a descargar si no cambia ningún pom.xml)
+RUN mvn dependency:go-offline -B || true
 
-# Compilar únicamente el módulo deseado y sus dependencias (más rápido)
+# 2. Copiar el código fuente completo
+COPY . .
+
+# 3. Compilar el módulo deseado
 RUN mvn clean package -pl ${MODULE_NAME} -am -DskipTests
 
-# Stage 2: Runtime
+# --- Stage 2: Runtime ---
 FROM eclipse-temurin:21-jre-alpine
 
 ARG MODULE_NAME
 WORKDIR /app
 
-# Copiar JAR generado dentro de la carpeta del módulo especificado
-COPY --from=builder /build/${MODULE_NAME}/target/*.jar app.jar
+# Copiar asegurando que solo tome el JAR ejecutable (excluyendo el .original si existe)
+COPY --from=builder /build/${MODULE_NAME}/target/*[!o][!r][!i][!g][!i][!n][!a][!l].jar app.jar
 
-# Crear directorio para datos
 RUN mkdir -p /data
 
-# Variable de entorno para el perfil de Spring
 ENV SPRING_PROFILES_ACTIVE=docker
 
-# Exponer puerto
 EXPOSE 8080
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD java -cp /app/app.jar org.springframework.boot.loader.JarLauncher || exit 1
+# Healthcheck ligero mediante consulta HTTP
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
-# Comando de inicio
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
