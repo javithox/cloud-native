@@ -7,7 +7,6 @@ services:
       POSTGRES_DB: campuslab
       POSTGRES_USER: campuslab
       POSTGRES_PASSWORD: campuslab
-    # Limita el uso de buffers compartidos en Postgres para ahorrar RAM
     command: ["postgres", "-c", "shared_buffers=32MB", "-c", "max_connections=30"]
     ports:
       - "5432:5432"
@@ -50,7 +49,6 @@ services:
     ports:
       - "9092:9092"
     environment:
-      # Restringe la memoria del Heap de la JVM de Kafka entre 128MB y 256MB
       KAFKA_HEAP_OPTS: "-Xms128m -Xmx256m"
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -79,6 +77,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        MODULE_NAME: ms-campuslab-bookings
     container_name: ms-campuslab-bookings
     ports:
       - "8082:8082"
@@ -112,6 +112,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        MODULE_NAME: ms-campuslab-catalog
     container_name: ms-campuslab-catalog
     ports:
       - "8081:8081"
@@ -144,6 +146,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        MODULE_NAME: ms-campuslab-audit
     container_name: ms-campuslab-audit
     ports:
       - "8083:8083"
@@ -176,6 +180,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        MODULE_NAME: ms-campuslab-notify
     container_name: ms-campuslab-notify
     ports:
       - "8084:8084"
@@ -208,6 +214,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        MODULE_NAME: ms-campuslab-report
     container_name: ms-campuslab-report
     ports:
       - "8085:8085"

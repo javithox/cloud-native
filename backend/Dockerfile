@@ -15,7 +15,7 @@ COPY ms-campuslab-notify/pom.xml ms-campuslab-notify/
 COPY ms-campuslab-audit/pom.xml ms-campuslab-audit/
 COPY ms-campuslab-report/pom.xml ms-campuslab-report/
 
-# Descargar dependencias en caché (no se volverán a descargar si no cambia ningún pom.xml)
+# Descargar dependencias en caché
 RUN mvn dependency:go-offline -B || true
 
 # 2. Copiar el código fuente completo
@@ -24,14 +24,16 @@ COPY . .
 # 3. Compilar el módulo deseado
 RUN mvn clean package -pl ${MODULE_NAME} -am -DskipTests
 
+# 4. Aislar el JAR ejecutable filtrando el archivo .original
+RUN find ${MODULE_NAME}/target -maxdepth 1 -name "*.jar" ! -name "*.original*" -exec cp {} /build/app.jar \;
+
 # --- Stage 2: Runtime ---
 FROM eclipse-temurin:21-jre-alpine
 
-ARG MODULE_NAME
 WORKDIR /app
 
-# Copiar asegurando que solo tome el JAR ejecutable (excluyendo el .original si existe)
-COPY --from=builder /build/${MODULE_NAME}/target/*[!o][!r][!i][!g][!i][!n][!a][!l].jar app.jar
+# Copiar directamente el ejecutable unificado
+COPY --from=builder /build/app.jar /app/app.jar
 
 RUN mkdir -p /data
 
@@ -39,7 +41,6 @@ ENV SPRING_PROFILES_ACTIVE=docker
 
 EXPOSE 8080
 
-# Healthcheck ligero mediante consulta HTTP
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
