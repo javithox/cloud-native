@@ -6,10 +6,16 @@ services:
       POSTGRES_DB: campuslab
       POSTGRES_USER: campuslab
       POSTGRES_PASSWORD: campuslab
+    # Limita el uso de buffers compartidos en Postgres para ahorrar RAM
+    command: ["postgres", "-c", "shared_buffers=32MB", "-c", "max_connections=30"]
     ports:
       - "5432:5432"
     volumes:
       - campuslab-postgres-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 200M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U campuslab -d campuslab"]
       interval: 5s
@@ -27,6 +33,10 @@ services:
       - "15672:15672"
     volumes:
       - campuslab-rabbitmq-data:/var/lib/rabbitmq
+    deploy:
+      resources:
+        limits:
+          memory: 200M
 
   kafka:
     image: apache/kafka:3.9.0
@@ -34,6 +44,8 @@ services:
     ports:
       - "9092:9092"
     environment:
+      # Restringe la memoria del Heap de la JVM de Kafka entre 128MB y 256MB
+      KAFKA_HEAP_OPTS: "-Xms128m -Xmx256m"
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
@@ -47,6 +59,10 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - campuslab-kafka-data:/tmp/kraft-combined-logs
+    deploy:
+      resources:
+        limits:
+          memory: 350M
 
 volumes:
   campuslab-postgres-data:
