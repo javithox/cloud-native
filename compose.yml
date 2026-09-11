@@ -1,4 +1,5 @@
 services:
+  # ========== Base de Datos y Mensajería ==========
   postgres:
     image: postgres:16-alpine
     container_name: campuslab-postgres
@@ -15,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - campuslab-network
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -27,6 +30,13 @@ services:
       - "15672:15672"
     volumes:
       - campuslab-rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - campuslab-network
 
   kafka:
     image: apache/kafka:3.9.0
@@ -38,7 +48,7 @@ services:
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -47,8 +57,198 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - campuslab-kafka-data:/tmp/kraft-combined-logs
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - campuslab-network
+
+  # ========== Microservicios Backend ==========
+  ms-campuslab-bookings:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ms-campuslab-bookings
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      SPRING_DATASOURCE_USERNAME: campuslab
+      SPRING_DATASOURCE_PASSWORD: campuslab
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
+      SERVER_PORT: 8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - campuslab-network
+
+  ms-campuslab-catalog:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ms-campuslab-catalog
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      SPRING_DATASOURCE_USERNAME: campuslab
+      SPRING_DATASOURCE_PASSWORD: campuslab
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      SERVER_PORT: 8081
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - campuslab-network
+
+  ms-campuslab-audit:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ms-campuslab-audit
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      SPRING_DATASOURCE_USERNAME: campuslab
+      SPRING_DATASOURCE_PASSWORD: campuslab
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      SERVER_PORT: 8083
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - campuslab-network
+
+  ms-campuslab-notify:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ms-campuslab-notify
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      SPRING_DATASOURCE_USERNAME: campuslab
+      SPRING_DATASOURCE_PASSWORD: campuslab
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      SERVER_PORT: 8084
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - campuslab-network
+
+  ms-campuslab-report:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ms-campuslab-report
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      SPRING_DATASOURCE_USERNAME: campuslab
+      SPRING_DATASOURCE_PASSWORD: campuslab
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      SERVER_PORT: 8085
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - campuslab-network
+
+  # ========== Frontend ==========
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: campuslab-frontend
+    ports:
+      - "4200:4200"
+    environment:
+      API_URL: ${API_URL:-http://localhost:8082}
+    depends_on:
+      - ms-campuslab-bookings
+      - ms-campuslab-catalog
+    restart: unless-stopped
+    networks:
+      - campuslab-network
 
 volumes:
   campuslab-postgres-data:
   campuslab-rabbitmq-data:
   campuslab-kafka-data:
+
+networks:
+  campuslab-network:
+    driver: bridge

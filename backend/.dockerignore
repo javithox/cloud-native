@@ -1,0 +1,15 @@
+target/
+.git/
+.gitignore
+.DS_Store
+.idea/
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+mvnw.cmd
+.vscode/
+node_modules/
+*.log
+.env
+.env.local
+*.md
+!README.md

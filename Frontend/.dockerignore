@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.git/
+.gitignore
+.DS_Store
+.angular/
+.vscode/
+*.log
+.env
+.env.local
+*.md
+!README.md
+.editorconfig
+karma.conf.js
