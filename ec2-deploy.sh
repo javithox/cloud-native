@@ -106,7 +106,7 @@ docker-compose ps
 print_section "8. Realizando pruebas de conectividad"
 
 echo "Probando Frontend..."
-if curl -s http://localhost:4200 > /dev/null; then
+if curl -s http://$IP_EC2:4200 > /dev/null; then
     echo "✓ Frontend accesible en http://$IP_EC2:4200"
 else
     echo "⚠ Frontend aún está iniciando..."
@@ -114,7 +114,7 @@ fi
 
 echo ""
 echo "Probando API Bookings..."
-if curl -s http://localhost:8082/actuator/health > /dev/null; then
+if curl -s http://$IP_EC2:8082/actuator/health > /dev/null; then
     echo "✓ API Bookings accesible en http://$IP_EC2:8082"
 else
     echo "⚠ API aún está iniciando..."
