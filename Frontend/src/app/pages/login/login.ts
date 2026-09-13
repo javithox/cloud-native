@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { AppRole, AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
+import { AppRole } from '../../services/role-permissions';
 
 @Component({
   selector: 'app-login-page',
@@ -20,5 +21,9 @@ export class LoginPage {
 
   loginWithMicrosoft(): void {
     this.authService.login(this.selectedRole);
+  }
+
+  get roleDescription(): string {
+    return this.authService.getRoleDefinition(this.selectedRole).description;
   }
 }

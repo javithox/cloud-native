@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AuthService, AppRole } from './services/auth.service';
+import { AppRole } from './services/role-permissions';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -23,8 +24,11 @@ export class App {
 
   visibleNavItems(): Array<{ label: string; path: string; roles: AppRole[] }> {
     const currentRole = this.authService.getRole() ?? 'Estudiante';
-
     return this.navItems.filter((item) => item.roles.includes(currentRole));
+  }
+
+  currentRoleLabel(): string {
+    return this.authService.getRoleDefinition().label;
   }
 
   toggleMenu(): void {

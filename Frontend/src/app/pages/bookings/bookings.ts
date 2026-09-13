@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 import { CampusLabApiService, Booking } from '../../services/campuslab-api.service';
 
 @Component({
@@ -11,9 +12,18 @@ import { CampusLabApiService, Booking } from '../../services/campuslab-api.servi
 })
 export class BookingsPage implements OnInit {
   private readonly api = inject(CampusLabApiService);
+  private readonly authService = inject(AuthService);
   bookings: Booking[] = [];
   loading = true;
   error = '';
+
+  get currentRole() {
+    return this.authService.getRole() ?? 'Estudiante';
+  }
+
+  canAdvanceStatus(): boolean {
+    return ['Admin', 'Técnico'].includes(this.currentRole);
+  }
 
   ngOnInit(): void { this.reload(); }
 

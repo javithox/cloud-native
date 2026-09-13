@@ -2,9 +2,18 @@
   <header class="page-header">
     <div>
       <p class="eyebrow">Dashboard</p>
-      <h1>Resumen para {{ currentRole }}</h1>
+      <h1>Resumen para {{ roleDefinition.label }}</h1>
     </div>
   </header>
+
+  <div class="role-summary">
+    <p>{{ roleDefinition.description }}</p>
+    <ul class="capabilities-list">
+      @for (capability of capabilities(); track capability) {
+        <li>{{ capability }}</li>
+      }
+    </ul>
+  </div>
 
   <div class="stats-grid">
     @for (metric of metrics(); track metric.label) {
@@ -13,5 +22,17 @@
         <strong>{{ metric.value }}</strong>
       </article>
     }
+  </div>
+
+  <div class="action-panel">
+    <h2>Acciones habilitadas</h2>
+    <div class="action-grid">
+      @for (action of actions(); track action.label) {
+        <article class="action-card">
+          <strong>{{ action.label }}</strong>
+          <p>{{ action.description }}</p>
+        </article>
+      }
+    </div>
   </div>
 </section>

@@ -2,7 +2,7 @@
   <header class="page-header">
     <div>
       <p class="eyebrow">Reservas</p>
-      <h1>Gestión de reservas</h1>
+      <h1>Gestión de reservas · {{ currentRole }}</h1>
     </div>
     <button type="button" class="primary-action" (click)="reload()">Actualizar</button>
   </header>
@@ -25,7 +25,13 @@
             <td>{{ booking.resourceName }}</td>
             <td>{{ booking.startTime | date:'short' }} - {{ booking.endTime | date:'shortTime' }}</td>
             <td><span class="status">{{ booking.status }}</span></td>
-            <td><button type="button" (click)="advance(booking)">Avanzar</button></td>
+            <td>
+              @if (canAdvanceStatus()) {
+                <button type="button" (click)="advance(booking)">Avanzar</button>
+              } @else {
+                <span>Solo lectura</span>
+              }
+            </td>
           </tr>
         }
       </tbody>

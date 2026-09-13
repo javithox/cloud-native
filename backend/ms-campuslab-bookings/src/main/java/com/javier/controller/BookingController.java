@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -23,18 +24,21 @@ public class BookingController {
 
     // POST /api/bookings (crear reserva)[cite: 1]
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE')")
     public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody CreateBookingRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBooking(request));
     }
 
     // GET /api/bookings/{id}[cite: 1]
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE')")
     public ResponseEntity<BookingResponse> getBookingById(@PathVariable Long id) {
         return ResponseEntity.ok(bookingService.getBookingById(id));
     }
 
     // PUT /api/bookings/{id}/status[cite: 1]
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO')")
     public ResponseEntity<BookingResponse> updateStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateStatusRequest request) {
@@ -43,6 +47,7 @@ public class BookingController {
 
     // GET /api/bookings?status=...&from=...&to=...[cite: 1]
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE')")
     public ResponseEntity<List<BookingResponse>> getBookings(
             @RequestParam(required = false) BookingStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
