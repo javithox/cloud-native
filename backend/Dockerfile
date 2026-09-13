@@ -11,7 +11,9 @@ COPY ms-campuslab-report/pom.xml ms-campuslab-report/
 RUN mvn -B dependency:go-offline || true
 COPY . .
 RUN mvn -B clean package -pl ${MODULE_NAME} -am -DskipTests
-RUN find ${MODULE_NAME}/target -maxdepth 1 -type f -name '*.jar' ! -name '*.original' -exec cp {} /build/app.jar \\;
+RUN JAR="$(find "${MODULE_NAME}/target" -maxdepth 1 -type f -name '*.jar' ! -name '*.original' | head -n 1)" \
+    && test -n "${JAR}" \
+    && cp "${JAR}" /build/app.jar
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app

@@ -34,7 +34,12 @@ docker compose up -d --build
 docker compose ps
 ```
 
-La plantilla ya está configurada para la IP pública `3.238.17.63`. Si la IP de la instancia cambia, actualiza las cinco variables `API_*` del archivo `.env` antes de levantar los contenedores.
+La plantilla usa una sola variable pública: `EC2_PUBLIC_HOST=34.201.56.208`. Compose genera automáticamente las cinco URLs públicas del frontend (`8080`–`8084`) a partir de esa variable. Si la IP de la instancia cambia, solo modifica `EC2_PUBLIC_HOST` en `.env` y vuelve a crear el frontend:
+
+```bash
+sed -i 's/^EC2_PUBLIC_HOST=.*/EC2_PUBLIC_HOST=NUEVA_IP_PUBLICA/' .env
+docker compose up -d --build frontend
+```
 
 En el security group de EC2 deben estar publicados al menos `4200` para la web y `8081`–`8085` si el navegador va a consumir las APIs directamente. Para producción se recomienda poner un reverse proxy delante y publicar solo `80/443`.
 
