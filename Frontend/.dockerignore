@@ -12,3 +12,7 @@ dist/
 !README.md
 .editorconfig
 karma.conf.js
+.env.*
+target/
+data/
+.idea/

@@ -1,0 +1,9 @@
+.env
+.env.*
+target/
+node_modules/
+dist/
+data/
+.git/
+.idea/
+.vscode/

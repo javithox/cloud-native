@@ -253,7 +253,11 @@ services:
     ports:
       - "4200:4200"
     environment:
-      API_URL: ${API_URL:-http://3.238.17.63:4200:8082}
+      API_CATALOG_URL: ${API_CATALOG_URL:-http://localhost:8081/api/}
+      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://localhost:8082/api/}
+      API_REPORT_URL: ${API_REPORT_URL:-http://localhost:8084/api}
+      API_AUDIT_URL: ${API_AUDIT_URL:-http://localhost:8083/api}
+      API_BASE_URL: ${API_BASE_URL:-http://localhost:8080/api}
     depends_on:
       - ms-campuslab-bookings
       - ms-campuslab-catalog

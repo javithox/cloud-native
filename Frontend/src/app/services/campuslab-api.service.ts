@@ -32,8 +32,8 @@ export class CampusLabApiService {
   private readonly http = inject(HttpClient);
   private readonly bookingsUrl = environment.apiBookingsUrl.replace(/\/$/, '');
   private readonly catalogUrl = environment.apiCatalogUrl.replace(/\/$/, '');
-  private readonly reportUrl = 'http://localhost:8084/api';
-  private readonly auditUrl = 'http://localhost:8083/api';
+  private readonly reportUrl = environment.apiReportUrl.replace(/\/$/, '');
+  private readonly auditUrl = environment.apiAuditUrl.replace(/\/$/, '');
 
   bookings(status?: string): Observable<Booking[]> {
     let params = new HttpParams();
