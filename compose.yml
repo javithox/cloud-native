@@ -11,6 +11,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - ./docker/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql:ro
       - campuslab-postgres-data:/var/lib/postgresql/data
     deploy:
       resources:
@@ -84,7 +85,8 @@ services:
       - "8082:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      DB_NAME: campuslab_bookings
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_bookings
       SPRING_DATASOURCE_USERNAME: campuslab
       SPRING_DATASOURCE_PASSWORD: campuslab
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
@@ -119,7 +121,8 @@ services:
       - "8081:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      DB_NAME: campuslab_catalog
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_catalog
       SPRING_DATASOURCE_USERNAME: campuslab
       SPRING_DATASOURCE_PASSWORD: campuslab
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
@@ -153,7 +156,8 @@ services:
       - "8083:8083"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      DB_NAME: campuslab_audit
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_audit
       SPRING_DATASOURCE_USERNAME: campuslab
       SPRING_DATASOURCE_PASSWORD: campuslab
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
@@ -187,7 +191,8 @@ services:
       - "8084:8084"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      DB_NAME: campuslab_notify
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_notify
       SPRING_DATASOURCE_USERNAME: campuslab
       SPRING_DATASOURCE_PASSWORD: campuslab
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
@@ -221,7 +226,8 @@ services:
       - "8085:8085"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab
+      DB_NAME: campuslab_report
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_report
       SPRING_DATASOURCE_USERNAME: campuslab
       SPRING_DATASOURCE_PASSWORD: campuslab
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
@@ -255,9 +261,9 @@ services:
     environment:
       API_CATALOG_URL: http://${EC2_PUBLIC_HOST:-localhost}:8081/api/
       API_BOOKINGS_URL: http://${EC2_PUBLIC_HOST:-localhost}:8082/api/
-      API_REPORT_URL: http://${EC2_PUBLIC_HOST:-localhost}:8084/api
+      API_REPORT_URL: http://${EC2_PUBLIC_HOST:-localhost}:8085/api
       API_AUDIT_URL: http://${EC2_PUBLIC_HOST:-localhost}:8083/api
-      API_BASE_URL: http://${EC2_PUBLIC_HOST:-localhost}:8080/api
+      
     depends_on:
       - ms-campuslab-bookings
       - ms-campuslab-catalog

@@ -38,4 +38,18 @@ describe('App', () => {
     expect(ROLE_DEFINITIONS.Auditor.capabilities).toContain('Ver auditoría y trazabilidad');
     expect(getRoleDefinition('Admin').label).toBe('Administrador');
   });
+
+  it('should allow nested booking and catalog routes within the same role area', () => {
+    expect(getRoleDefinition('Estudiante').routes).toContain('/bookings');
+    expect(getRoleDefinition('Estudiante').routes).not.toContain('/bookings/new');
+
+    const canAccessNestedBooking = (role: string, route: string) => {
+      const segments = getRoleDefinition(role as any).routes;
+      return segments.some((item) => route === item || route.startsWith(`${item}/`));
+    };
+
+    expect(canAccessNestedBooking('Estudiante', '/bookings/new')).toBeTrue();
+    expect(canAccessNestedBooking('Técnico', '/catalog/new')).toBeTrue();
+    expect(canAccessNestedBooking('Admin', '/catalog/12/edit')).toBeTrue();
+  });
 });

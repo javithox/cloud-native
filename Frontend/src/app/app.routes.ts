@@ -2,7 +2,9 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { AuditPage } from './pages/audit/audit';
 import { BookingsPage } from './pages/bookings/bookings';
+import { BookingFormPage } from './pages/bookings/booking-form';
 import { CatalogPage } from './pages/catalog/catalog';
+import { CatalogFormPage } from './pages/catalog/catalog-form';
 import { DashboardPage } from './pages/dashboard/dashboard';
 import { LoginPage } from './pages/login/login';
 import { ReportsPage } from './pages/reports/reports';
@@ -22,8 +24,26 @@ export const routes: Routes = [
     data: { roles: ['Admin', 'Técnico', 'Estudiante'] },
   },
   {
+    path: 'bookings/new',
+    component: BookingFormPage,
+    canActivate: [AuthGuard],
+    data: { roles: ['Admin', 'Técnico', 'Estudiante'] },
+  },
+  {
     path: 'catalog',
     component: CatalogPage,
+    canActivate: [AuthGuard],
+    data: { roles: ['Admin', 'Técnico'] },
+  },
+  {
+    path: 'catalog/new',
+    component: CatalogFormPage,
+    canActivate: [AuthGuard],
+    data: { roles: ['Admin', 'Técnico'] },
+  },
+  {
+    path: 'catalog/:id/edit',
+    component: CatalogFormPage,
     canActivate: [AuthGuard],
     data: { roles: ['Admin', 'Técnico'] },
   },

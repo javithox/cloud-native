@@ -4,17 +4,35 @@
       <p class="eyebrow">Catálogo</p>
       <h1>Recursos disponibles</h1>
     </div>
+    <div class="header-actions">
+      <button type="button" class="secondary-action" (click)="reload()">Actualizar</button>
+      <button type="button" class="primary-action" (click)="goToCreateResource()">+ Nuevo recurso</button>
+    </div>
   </header>
 
-  <div class="cards-grid">
-    @for (resource of resources; track resource.name) {
-      <article class="resource-card">
-        <span class="tag">{{ resource.type }}</span>
-        <h3>{{ resource.name }}</h3>
-        <p>{{ resource.description || 'Recurso académico' }}</p>
-        <strong>{{ resource.availableStock }} / {{ resource.totalStock }} disponibles</strong>
-      </article>
-    }
-  </div>
+  @if (!resources.length && !error) {
+    <div class="empty-state">
+      <p>No hay recursos disponibles todavía.</p>
+      <button type="button" class="primary-action" (click)="goToCreateResource()">Agregar primer recurso</button>
+    </div>
+  }
+
+  @if (resources.length) {
+    <div class="cards-grid">
+      @for (resource of resources; track resource.name) {
+        <article class="resource-card">
+          <span class="tag">{{ resource.type }}</span>
+          <h3>{{ resource.name }}</h3>
+          <p>{{ resource.description || 'Recurso académico' }}</p>
+          <strong>{{ resource.availableStock }} / {{ resource.totalStock }} disponibles</strong>
+          <div class="resource-actions">
+            <button type="button" class="secondary-action" (click)="editResource(resource)">Editar</button>
+            <button type="button" class="danger-button" (click)="deleteResource(resource)">Eliminar</button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
   @if (error) { <p class="error">{{ error }}</p> }
 </section>

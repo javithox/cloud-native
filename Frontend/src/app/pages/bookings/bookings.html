@@ -4,7 +4,10 @@
       <p class="eyebrow">Reservas</p>
       <h1>Gestión de reservas · {{ currentRole }}</h1>
     </div>
-    <button type="button" class="primary-action" (click)="reload()">Actualizar</button>
+    <div class="header-actions">
+      <button type="button" class="secondary-action" (click)="reload()">Actualizar</button>
+      <button type="button" class="primary-action" (click)="goToCreateBooking()">+ Nueva reserva</button>
+    </div>
   </header>
 
   <div class="table-card">
@@ -26,11 +29,12 @@
             <td>{{ booking.startTime | date:'short' }} - {{ booking.endTime | date:'shortTime' }}</td>
             <td><span class="status">{{ booking.status }}</span></td>
             <td>
-              @if (canAdvanceStatus()) {
-                <button type="button" (click)="advance(booking)">Avanzar</button>
-              } @else {
-                <span>Solo lectura</span>
-              }
+              <div class="row-actions">
+                @if (canAdvanceStatus()) {
+                  <button type="button" (click)="advance(booking)">Avanzar</button>
+                }
+                <button type="button" class="danger-button" (click)="deleteBooking(booking)">Eliminar</button>
+              </div>
             </td>
           </tr>
         }

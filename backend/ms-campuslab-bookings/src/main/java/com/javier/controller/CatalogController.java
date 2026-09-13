@@ -35,11 +35,24 @@ public class CatalogController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resourceService.createResource(request));
     }
 
+    // PUT /api/catalog/resources/{id}/details
+    @PutMapping("/resources/{id}/details")
+    public ResponseEntity<ResourceResponse> updateResource(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateResourceRequest request) {
+        return ResponseEntity.ok(resourceService.updateResource(id, request));
+    }
+
     // PUT /api/catalog/resources/{id} (cupo/stock)
     @PutMapping("/resources/{id}")
     public ResponseEntity<ResourceResponse> updateStock(
             @PathVariable Long id,
             @Valid @RequestBody UpdateStockRequest request) {
         return ResponseEntity.ok(resourceService.updateStock(id, request));
+    }
+
+    @DeleteMapping("/resources/{id}")
+    public ResponseEntity<ResourceResponse> deleteResource(@PathVariable Long id) {
+        return ResponseEntity.ok(resourceService.deleteResource(id));
     }
 }

@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/campuslab
+    url: jdbc:postgresql://postgres:5432/${DB_NAME:campuslab_bookings}
     driver-class-name: org.postgresql.Driver
     username: campuslab
     password: campuslab

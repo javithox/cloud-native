@@ -5,8 +5,7 @@ window.__env = {
   apiCatalogUrl: "${API_CATALOG_URL:-}",
   apiBookingsUrl: "${API_BOOKINGS_URL:-}",
   apiReportUrl: "${API_REPORT_URL:-}",
-  apiAuditUrl: "${API_AUDIT_URL:-}",
-  apiBaseUrl: "${API_BASE_URL:-}"
+  apiAuditUrl: "${API_AUDIT_URL:-}"
 };
 EOF
 exec node /app/server.js

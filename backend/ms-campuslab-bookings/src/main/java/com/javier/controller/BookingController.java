@@ -45,6 +45,12 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.updateBookingStatus(id, request));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE')")
+    public ResponseEntity<BookingResponse> deleteBooking(@PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.deleteBooking(id));
+    }
+
     // GET /api/bookings?status=...&from=...&to=...[cite: 1]
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE')")

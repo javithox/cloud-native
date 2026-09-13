@@ -16,7 +16,7 @@ export const environment = {
   production: true,
   apiCatalogUrl: runtime.apiCatalogUrl || apiUrl('8081'),
   apiBookingsUrl: runtime.apiBookingsUrl || apiUrl('8082'),
-  apiReportUrl: runtime.apiReportUrl || apiUrl('8084'),
+  apiReportUrl: runtime.apiReportUrl || apiUrl('8085'),
   apiAuditUrl: runtime.apiAuditUrl || apiUrl('8083'),
   apiUrl: runtime.apiBaseUrl || apiUrl('8080'),
   azure: {

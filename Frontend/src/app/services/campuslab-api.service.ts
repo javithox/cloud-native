@@ -45,6 +45,10 @@ export class CampusLabApiService {
     return this.http.put<Booking>(`${this.bookingsUrl}/bookings/${id}/status`, { status });
   }
 
+  getBookingById(id: number): Observable<Booking> {
+    return this.http.get<Booking>(`${this.bookingsUrl}/bookings/${id}`);
+  }
+
   createBooking(payload: {
     studentId: string;
     studentEmail: string;
@@ -56,8 +60,40 @@ export class CampusLabApiService {
     return this.http.post<Booking>(`${this.bookingsUrl}/bookings`, payload);
   }
 
+  deleteBooking(id: number): Observable<Booking> {
+    return this.http.delete<Booking>(`${this.bookingsUrl}/bookings/${id}`);
+  }
+
   resources(): Observable<Resource[]> {
     return this.http.get<Resource[]>(`${this.catalogUrl}/catalog/resources`);
+  }
+
+  getResourceById(id: number): Observable<Resource> {
+    return this.http.get<Resource>(`${this.catalogUrl}/catalog/resources/${id}`);
+  }
+
+  createResource(payload: {
+    code: string;
+    name: string;
+    description?: string;
+    type: string;
+    totalStock: number;
+  }): Observable<Resource> {
+    return this.http.post<Resource>(`${this.catalogUrl}/catalog/resources`, payload);
+  }
+
+  updateResource(id: number, payload: {
+    code?: string;
+    name?: string;
+    description?: string;
+    type?: string;
+    totalStock?: number;
+  }): Observable<Resource> {
+    return this.http.put<Resource>(`${this.catalogUrl}/catalog/resources/${id}/details`, payload);
+  }
+
+  deleteResource(id: number): Observable<Resource> {
+    return this.http.delete<Resource>(`${this.catalogUrl}/catalog/resources/${id}`);
   }
 
   kpis(): Observable<Record<string, number>> {
@@ -66,7 +102,7 @@ export class CampusLabApiService {
     });
   }
 
-  audit(): Observable<unknown[]> {
-    return this.http.get<unknown[]>(`${this.auditUrl}/audit/events`);
+  audit(): Observable<Array<{ id?: number; eventType?: string; correlationId?: string; traceId?: string; createdAt?: string; payload?: string; timestamp?: number }>> {
+    return this.http.get<Array<{ id?: number; eventType?: string; correlationId?: string; traceId?: string; createdAt?: string; payload?: string; timestamp?: number }>>(`${this.auditUrl}/audit/timeline`);
   }
 }

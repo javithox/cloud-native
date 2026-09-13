@@ -117,6 +117,12 @@ export function getRoleDefinition(role: AppRole | null | undefined): RoleDefinit
 }
 
 export function canAccessRoute(role: AppRole | null | undefined, route: string): boolean {
-  const routeList = getRoleDefinition(role).routes;
-  return routeList.includes(route);
+  const normalizedRoute = route.startsWith('/') ? route : `/${route}`;
+  const routeList = getRoleDefinition(role).routes.map((item) =>
+    item.startsWith('/') ? item : `/${item}`,
+  );
+
+  return routeList.some((allowedRoute) => {
+    return normalizedRoute === allowedRoute || normalizedRoute.startsWith(`${allowedRoute}/`);
+  });
 }

@@ -107,6 +107,20 @@ public class BookingService {
         return mapToResponse(booking);
     }
 
+    @Transactional
+    public BookingResponse deleteBooking(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con ID: " + id));
+
+        if (booking.getStatus() != BookingStatus.CANCELADA) {
+            booking.setStatus(BookingStatus.CANCELADA);
+            booking = bookingRepository.save(booking);
+            publishKafkaEvent("BOOKING_CANCELLED", booking);
+        }
+
+        return mapToResponse(booking);
+    }
+
     public BookingResponse getBookingById(Long id) {
         return bookingRepository.findById(id)
                 .map(this::mapToResponse)

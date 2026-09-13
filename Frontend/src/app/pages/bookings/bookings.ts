@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CampusLabApiService, Booking } from '../../services/campuslab-api.service';
 
@@ -13,6 +14,7 @@ import { CampusLabApiService, Booking } from '../../services/campuslab-api.servi
 export class BookingsPage implements OnInit {
   private readonly api = inject(CampusLabApiService);
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   bookings: Booking[] = [];
   loading = true;
   error = '';
@@ -42,5 +44,13 @@ export class BookingsPage implements OnInit {
     };
     const status = next[booking.status];
     if (status) this.api.updateBookingStatus(booking.id, status).subscribe({ next: () => this.reload() });
+  }
+
+  deleteBooking(booking: Booking): void {
+    this.api.deleteBooking(booking.id).subscribe({ next: () => this.reload() });
+  }
+
+  goToCreateBooking(): void {
+    this.router.navigate(['/bookings/new']);
   }
 }

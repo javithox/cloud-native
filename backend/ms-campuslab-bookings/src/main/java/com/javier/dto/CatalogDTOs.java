@@ -34,6 +34,15 @@ public class CatalogDTOs {
     }
 
     @Data
+    public static class UpdateResourceRequest {
+        private String code;
+        private String name;
+        private String description;
+        private ResourceType type;
+        private Integer totalStock;
+    }
+
+    @Data
     public static class ResourceResponse {
         private Long id;
         private String code;

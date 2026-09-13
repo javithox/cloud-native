@@ -1,6 +1,0 @@
-#FileLock
-#Thu Sep 10 23:02:45 UTC 2026
-hostName=oem-ThinkCentre-M90
-id=1a08d8f22126bfb99d457d07557e3d0447f8fac3e15
-method=file
-server=127.0.1.1\:42807
