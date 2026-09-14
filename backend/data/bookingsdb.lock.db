@@ -1,0 +1,6 @@
+#FileLock
+#Sun Sep 13 21:34:09 CLST 2026
+hostName=oem-ThinkCentre-M90
+id=1a09d55e48ffa6ae0587e0a6fb14f712b77026a219a
+method=file
+server=127.0.1.1\:38935

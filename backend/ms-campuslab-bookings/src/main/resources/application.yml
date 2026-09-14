@@ -4,34 +4,46 @@ server:
 spring:
   application:
     name: ms-campuslab-bookings
+
   datasource:
     url: jdbc:h2:file:/home/oem/Desktop/cloud-native/backend/data/bookingsdb;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
   jpa:
     hibernate:
       ddl-auto: update
     open-in-view: false
+
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USER:guest}
     password: ${RABBITMQ_PASSWORD:guest}
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${TENANT_ID:aaaa-bbbb-cccc-dddd}/v2.0
+
 campuslab:
   catalog:
     base-url: ${CATALOG_BASE_URL:http://localhost:8081}
+
   rabbitmq:
     exchanges:
       direct: booking.direct.exchange
       topic: booking.topic.exchange
       dlx: booking.dlx.exchange
+
   kafka:
     topics:
       booking-events: booking-events-topic
