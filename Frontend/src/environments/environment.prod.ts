@@ -19,7 +19,7 @@ const runtime = globalThis.__env ?? {};
 const ec2PublicHost =
   runtime.ec2PublicHost ||
   globalThis.location?.hostname ||
-  '32.199.138.229:4200';
+  '32.199.138.229';
 
 const apiScheme =
   runtime.apiScheme ||
