@@ -1,37 +1,21 @@
-declare global {
-  var __env:
-    | {
-        ec2PublicHost?: string;
-        apiScheme?: string;
-        frontendPort?: string;
-
-        apiCatalogUrl?: string;
-        apiBookingsUrl?: string;
-        apiReportUrl?: string;
-        apiAuditUrl?: string;
-        apiBaseUrl?: string;
-      }
-    | undefined;
-}
-
 const runtime = globalThis.__env ?? {};
-
-const ec2PublicHost =
-  runtime.ec2PublicHost ||
-  globalThis.location?.hostname ||
-  '32.199.138.229';
 
 const apiScheme =
   runtime.apiScheme ||
   globalThis.location?.protocol.replace(':', '') ||
   'http';
 
+const ec2PublicHost =
+  runtime.ec2PublicHost ||
+  globalThis.location?.hostname ||
+  'localhost';
+
 const frontendPort =
   runtime.frontendPort ||
   globalThis.location?.port ||
   '4200';
 
-const apiUrl = (port: string ) =>
+const apiUrl = (port: string) =>
   `${apiScheme}://${ec2PublicHost}:${port}/api/`;
 
 const frontendOrigin =
@@ -39,22 +23,30 @@ const frontendOrigin =
   `${apiScheme}://${ec2PublicHost}:${frontendPort}`;
 
 export const environment = {
-  production: true,
+  production: false,
 
   apiCatalogUrl:
-    runtime.apiCatalogUrl || apiUrl('8081'),
+    runtime.apiCatalogUrl ||
+    'http://localhost:8081/api/',
 
   apiBookingsUrl:
-    runtime.apiBookingsUrl || apiUrl('8082'),
+    runtime.apiBookingsUrl ||
+    'http://localhost:8082/api/',
 
   apiReportUrl:
-    runtime.apiReportUrl || apiUrl('8085'),
+    runtime.apiReportUrl ||
+    'http://localhost:8085/api/',
 
   apiAuditUrl:
-    runtime.apiAuditUrl || apiUrl('8083'),
+    runtime.apiAuditUrl ||
+    'http://localhost:8083/api/',
 
   apiBaseUrl:
-    runtime.apiBaseUrl || apiUrl('8080'),
+    runtime.apiBaseUrl ||
+    'http://localhost:8080',
+
+  apiUrl:
+    'https://<TU_API_GATEWAY_ID>.execute-api.us-east-1.amazonaws.com/api',
 
   azure: {
     clientId:
@@ -77,5 +69,3 @@ export const environment = {
     ],
   },
 };
-
-export {};
