@@ -54,6 +54,30 @@ public class ResourceService {
         return mapToResponse(resourceRepository.save(resource));
     }
 
+    @Transactional
+    public ResourceResponse updateResource(Long id, UpdateResourceRequest request) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Recurso no encontrado con ID: " + id));
+        if (request.getCode() != null && !request.getCode().isBlank()) resource.setCode(request.getCode());
+        if (request.getName() != null && !request.getName().isBlank()) resource.setName(request.getName());
+        if (request.getDescription() != null) resource.setDescription(request.getDescription());
+        if (request.getType() != null) resource.setType(request.getType());
+        if (request.getTotalStock() != null) {
+            int delta = request.getTotalStock() - resource.getTotalStock();
+            resource.setTotalStock(request.getTotalStock());
+            resource.setAvailableStock(Math.max(0, resource.getAvailableStock() + delta));
+        }
+        return mapToResponse(resourceRepository.save(resource));
+    }
+
+    @Transactional
+    public ResourceResponse deleteResource(Long id) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Recurso no encontrado con ID: " + id));
+        resource.setActive(false);
+        return mapToResponse(resourceRepository.save(resource));
+    }
+
     public List<ResourceResponse> getAllResources() {
         return resourceRepository.findByActiveTrue()
                 .stream()

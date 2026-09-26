@@ -82,10 +82,19 @@ export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap =
     new Map<string, Array<string> | null>();
 
-  protectedResourceMap.set(
-    `${environment.apiBaseUrl}/*`,
-    environment.azure.protectedResourceScopes
-  );
+  const protectedResources = [
+    environment.apiBaseUrl,
+    environment.apiCatalogUrl,
+    environment.apiBookingsUrl,
+    environment.apiReportUrl,
+    environment.apiAuditUrl,
+  ];
+  for (const resource of protectedResources) {
+    protectedResourceMap.set(
+      `${resource.replace(/\/$/, '')}/*`,
+      environment.azure.protectedResourceScopes
+    );
+  }
 
   return {
     interactionType: InteractionType.Redirect,

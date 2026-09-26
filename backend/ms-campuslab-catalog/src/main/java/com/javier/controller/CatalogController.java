@@ -17,6 +17,7 @@ public class CatalogController {
 
     private final ResourceService resourceService;
 
+
     // GET /api/catalog/resources
     @GetMapping("/resources")
     public ResponseEntity<List<ResourceResponse>> getResources() {
@@ -41,5 +42,19 @@ public class CatalogController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateStockRequest request) {
         return ResponseEntity.ok(resourceService.updateStock(id, request));
+    }
+
+    // PUT /api/catalog/resources/{id}/details
+    @PutMapping("/resources/{id}/details")
+    public ResponseEntity<ResourceResponse> updateResource(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateResourceRequest request) {
+        return ResponseEntity.ok(resourceService.updateResource(id, request));
+    }
+
+    // DELETE /api/catalog/resources/{id}
+    @DeleteMapping("/resources/{id}")
+    public ResponseEntity<ResourceResponse> deleteResource(@PathVariable Long id) {
+        return ResponseEntity.ok(resourceService.deleteResource(id));
     }
 }
