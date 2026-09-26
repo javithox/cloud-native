@@ -1,3 +1,4 @@
+
 import {
   BrowserCacheLocation,
   InteractionType,
@@ -28,11 +29,11 @@ export function msalInstanceFactory(): PublicClientApplication {
       clientId: environment.azure.clientId,
       authority: environment.azure.authority,
       redirectUri: environment.azure.redirectUri,
-      postLogoutRedirectUri: environment.azure.postLogoutRedirectUri
+      postLogoutRedirectUri: environment.azure.postLogoutRedirectUri,
     },
 
     cache: {
-      cacheLocation: BrowserCacheLocation.LocalStorage
+      cacheLocation: BrowserCacheLocation.LocalStorage,
     },
 
     system: {
@@ -60,9 +61,9 @@ export function msalInstanceFactory(): PublicClientApplication {
           ? LogLevel.Error
           : LogLevel.Warning,
 
-        piiLoggingEnabled: false
-      }
-    }
+        piiLoggingEnabled: false,
+      },
+    },
   });
 }
 
@@ -71,10 +72,13 @@ export function msalGuardConfigFactory(): MsalGuardConfiguration {
     interactionType: InteractionType.Redirect,
 
     authRequest: {
-      scopes: ['User.Read']
+      scopes: [
+        'User.Read',
+        ...environment.azure.protectedResourceScopes,
+      ],
     },
 
-    loginFailedRoute: '/login-failed'
+    loginFailedRoute: '/login-failed',
   };
 }
 
@@ -89,15 +93,22 @@ export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
     environment.apiReportUrl,
     environment.apiAuditUrl,
   ];
+
   for (const resource of protectedResources) {
+    if (!resource) {
+      continue;
+    }
+
+    const normalizedResource = resource.replace(/\/+$/, '');
+
     protectedResourceMap.set(
-      `${resource.replace(/\/$/, '')}/*`,
+      `${normalizedResource}/*`,
       environment.azure.protectedResourceScopes
     );
   }
 
   return {
     interactionType: InteractionType.Redirect,
-    protectedResourceMap
+    protectedResourceMap,
   };
 }
