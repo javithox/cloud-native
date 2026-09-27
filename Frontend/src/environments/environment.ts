@@ -9,25 +9,34 @@ declare global {
 }
 
 const runtime = globalThis.__env ?? {};
-const apiOrigin = globalThis.location?.origin ?? 'http://localhost:4200';
-const apiUrl = (port: string) => `${apiOrigin.replace(/:4200$/, `:${port}`)}/api/`;
+
+// Construye la URL respetando el protocolo actual (http/https) y el dominio (campuslab.ddns.net)
+const getApiUrl = (port: string): string => {
+  if (typeof window === 'undefined' || !globalThis.location?.hostname) {
+    return `https://campuslab.ddns.net:${port}/api`;
+  }
+
+  const protocol = globalThis.location.protocol; // 'https:' o 'http:'
+  const hostname = globalThis.location.hostname; // 'campuslab.ddns.net' o 'localhost'
+
+  return `${protocol}//${hostname}:${port}/api`;
+};
 
 export const environment = {
   production: true,
-  apiCatalogUrl: runtime.apiCatalogUrl || apiUrl('8081'),
-  apiBookingsUrl: runtime.apiBookingsUrl || apiUrl('8082'),
-  apiReportUrl: runtime.apiReportUrl || apiUrl('8085'),
-  apiAuditUrl: runtime.apiAuditUrl || apiUrl('8083'),
-  apiUrl: runtime.apiBaseUrl || apiUrl('8080'),
+  apiCatalogUrl: runtime.apiCatalogUrl || getApiUrl('8081'),
+  apiBookingsUrl: runtime.apiBookingsUrl || getApiUrl('8082'),
+  apiAuditUrl: runtime.apiAuditUrl || getApiUrl('8083'),
+  apiReportUrl: runtime.apiReportUrl || getApiUrl('8085'),
+  apiBaseUrl: runtime.apiBaseUrl || getApiUrl('8080'),
   azure: {
     clientId: 'e03479f6-d22d-4624-aa81-6e724d570329',
     tenantId: 'bda559f7-26d8-4062-88a2-da66f2286b5f',
     authority: 'https://login.microsoftonline.com/bda559f7-26d8-4062-88a2-da66f2286b5f',
-    redirectUri: globalThis.location?.origin ?? 'http://localhost:4200',
-    postLogoutRedirectUri: globalThis.location?.origin ?? 'http://localhost:4200',
+    redirectUri: typeof window !== 'undefined' ? globalThis.location.origin : 'https://campuslab.ddns.net/',
+    postLogoutRedirectUri: typeof window !== 'undefined' ? globalThis.location.origin : 'https://campuslab.ddns.net/',
     protectedResourceScopes: ['api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'],
-  },
-  apiBaseUrl: runtime.apiBaseUrl || apiUrl('8080'),
+  }
 };
 
 export {};

@@ -1,30 +1,25 @@
 package com.javier.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -37,8 +32,12 @@ public class RoleSecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                // 1. Permitir peticiones preflight OPTIONS de CORS sin autenticación
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // 2. Endpoints públicos y de infraestructura
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                // 3. Control de acceso por roles
                 .requestMatchers("/api/catalog/**").hasAnyRole("ADMIN", "TECNICO")
                 .requestMatchers("/api/bookings/**").hasAnyRole("ADMIN", "TECNICO", "ESTUDIANTE")
                 .requestMatchers("/api/report/**").hasRole("ADMIN")
@@ -54,14 +53,16 @@ public class RoleSecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
-            @Value("${FRONTEND_ALLOWED_ORIGINS:http://localhost:4200}") String allowedOrigins) {
+            @Value("${FRONTEND_ALLOWED_ORIGINS:http://localhost:4200,https://campuslab.ddns.net}") String allowedOrigins) {
         CorsConfiguration config = new CorsConfiguration();
+        
         config.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
             .map(String::trim)
             .filter(origin -> !origin.isBlank())
             .toList());
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+            
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*")); // Permite cualquier encabezado enviado por Angular/MSAL
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -71,50 +72,24 @@ public class RoleSecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
-        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
-        Converter<Jwt, AbstractAuthenticationToken> converter = jwt -> {
-            Collection<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.addAll(grantedAuthoritiesConverter.convert(jwt));
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            // Usa un Set para evitar roles duplicados
+            Set<GrantedAuthority> authorities = new HashSet<>();
 
+            // 1. Mapeo de claim individual "role"
             String roleClaim = jwt.getClaimAsString("role");
             if (roleClaim != null && !roleClaim.isBlank()) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + roleClaim.toUpperCase()));
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + roleClaim.trim().toUpperCase()));
             }
 
+            // 2. Mapeo de claim lista "roles" (Azure AD / Entra ID)
             List<String> roles = jwt.getClaimAsStringList("roles");
             if (roles != null) {
                 for (String role : roles) {
                     if (role != null && !role.isBlank()) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
-                    }
-                }
-            }
-
-            return new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken(
-                jwt,
-                authorities,
-                jwt.getSubject()
-            );
-        };
-
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            Collection<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.addAll(grantedAuthoritiesConverter.convert(jwt));
-
-            String roleClaim = jwt.getClaimAsString("role");
-            if (roleClaim != null && !roleClaim.isBlank()) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + roleClaim.toUpperCase()));
-            }
-
-            List<String> roles = jwt.getClaimAsStringList("roles");
-            if (roles != null) {
-                for (String role : roles) {
-                    if (role != null && !role.isBlank()) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.trim().toUpperCase()));
                     }
                 }
             }
@@ -122,6 +97,6 @@ public class RoleSecurityConfig {
             return authorities;
         });
 
-        return jwtAuthenticationConverter;
+        return converter;
     }
 }

@@ -282,3 +282,24 @@ volumes:
 networks:
   campuslab-network:
     driver: bridge
+# Configuración Nginx (nginx.conf / server.js proxy)
+server {
+    listen 80;
+
+    location /api/bookings/ {
+        proxy_pass http://ms-campuslab-bookings:8080/;
+    }
+
+    location /api/catalog/ {
+        proxy_pass http://ms-campuslab-catalog:8080/;
+    }
+
+    location /api/reports/ {
+        proxy_pass http://ms-campuslab-report:8080/;
+    }
+
+    location / {
+        root /usr/share/nginx/html;
+        try_files $uri $uri/ /index.html;
+    }
+}

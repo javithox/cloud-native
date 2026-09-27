@@ -11,7 +11,6 @@ declare global {
 const runtime = globalThis.__env ?? {};
 const apiOrigin = globalThis.location?.origin ?? 'https://campuslab.ddns.net';
 const apiUrl = (port: string) => `${apiOrigin.replace(/:\d+$/, '')}:${port}/api/`;
-
 export const environment = {
   production: true,
   apiCatalogUrl: runtime.apiCatalogUrl || apiUrl('8081'),
