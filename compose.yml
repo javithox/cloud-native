@@ -99,7 +99,7 @@ services:
       RABBITMQ_PASSWORD: guest
       CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
       TENANT_ID: bda559f7-26d8-4062-88a2-da66f2286b5f
-      FRONTEND_ALLOWED_ORIGINS: http://${EC2_PUBLIC_HOST:-localhost}:4200
+      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
       SERVER_PORT: 8082
     depends_on:
       postgres:
@@ -135,6 +135,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
+      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
       SERVER_PORT: 8081
     depends_on:
       postgres:
@@ -170,6 +171,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
+      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
       SERVER_PORT: 8083
     depends_on:
       postgres:
@@ -205,6 +207,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
+      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
       SERVER_PORT: 8084
     depends_on:
       postgres:
@@ -240,6 +243,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
+      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
       SERVER_PORT: 8085
     depends_on:
       postgres:
@@ -261,12 +265,11 @@ services:
     ports:
       - "4200:4200"
     environment:
-      API_CATALOG_URL: http://${EC2_PUBLIC_HOST}:8081/api/
-      API_BOOKINGS_URL: http://${EC2_PUBLIC_HOST}:8082/api/
-      API_REPORT_URL: http://${EC2_PUBLIC_HOST}:8085/api
-      API_AUDIT_URL: http://${EC2_PUBLIC_HOST}:8083/api
-      API_BASE_URL: http://${EC2_PUBLIC_HOST}:8080/api/
-      
+      API_CATALOG_URL: http://${EC2_PUBLIC_HOST:-localhost}:8081/api
+      API_BOOKINGS_URL: http://${EC2_PUBLIC_HOST:-localhost}:8082/api
+      API_REPORT_URL: http://${EC2_PUBLIC_HOST:-localhost}:8085/api
+      API_AUDIT_URL: http://${EC2_PUBLIC_HOST:-localhost}:8083/api
+      API_BASE_URL: http://${EC2_PUBLIC_HOST:-localhost}:8080/api
     depends_on:
       - ms-campuslab-bookings
       - ms-campuslab-catalog
@@ -282,24 +285,3 @@ volumes:
 networks:
   campuslab-network:
     driver: bridge
-# Configuración Nginx (nginx.conf / server.js proxy)
-server {
-    listen 80;
-
-    location /api/bookings/ {
-        proxy_pass http://ms-campuslab-bookings:8080/;
-    }
-
-    location /api/catalog/ {
-        proxy_pass http://ms-campuslab-catalog:8080/;
-    }
-
-    location /api/reports/ {
-        proxy_pass http://ms-campuslab-report:8080/;
-    }
-
-    location / {
-        root /usr/share/nginx/html;
-        try_files $uri $uri/ /index.html;
-    }
-}
