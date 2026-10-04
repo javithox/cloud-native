@@ -42,23 +42,19 @@ public class MessageController {
      */
     @GetMapping("/send")
     public ResponseEntity<String> sendMessageGet(
-            @RequestParam(name = "message") String message) {
+            @RequestParam(name = "message", defaultValue = "") String message) {
+
+        if (message.isBlank()) {
+            return ResponseEntity.badRequest().body("Error: El parámetro 'message' no puede estar vacío.");
+        }
 
         try {
             sender.sendMessage(message);
-
-            return ResponseEntity.ok(
-                    "Mensaje enviado: " + message
-            );
-
+            return ResponseEntity.ok("Mensaje enviado: " + message);
         } catch (Exception e) {
-
-            return ResponseEntity.badRequest().body(
-                    "Error: " + e.getMessage()
-            );
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
-
     /**
      * DTO para recibir el mensaje en formato JSON.
      */

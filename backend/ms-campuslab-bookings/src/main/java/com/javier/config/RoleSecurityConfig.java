@@ -32,16 +32,15 @@ public class RoleSecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // 1. Permitir peticiones preflight OPTIONS de CORS sin autenticación
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // 2. Endpoints públicos y de infraestructura
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                // 3. Control de acceso por roles
+
                 .requestMatchers("/api/catalog/**").hasAnyRole("ADMIN", "TECNICO")
                 .requestMatchers("/api/bookings/**").hasAnyRole("ADMIN", "TECNICO", "ESTUDIANTE")
                 .requestMatchers("/api/report/**").hasRole("ADMIN")
                 .requestMatchers("/api/audit/**").hasAnyRole("ADMIN", "AUDITOR")
+
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
@@ -54,19 +53,23 @@ public class RoleSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
             @Value("${FRONTEND_ALLOWED_ORIGINS:http://localhost:4200,https://campuslab.ddns.net}") String allowedOrigins) {
+
         CorsConfiguration config = new CorsConfiguration();
-        
+
         config.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
             .map(String::trim)
             .filter(origin -> !origin.isBlank())
             .toList());
-            
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*")); // Permite cualquier encabezado enviado por Angular/MSAL
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 
@@ -75,21 +78,30 @@ public class RoleSecurityConfig {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            // Usa un Set para evitar roles duplicados
             Set<GrantedAuthority> authorities = new HashSet<>();
 
-            // 1. Mapeo de claim individual "role"
+            // role: "Admin"
             String roleClaim = jwt.getClaimAsString("role");
             if (roleClaim != null && !roleClaim.isBlank()) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + roleClaim.trim().toUpperCase()));
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + normalizeRole(roleClaim)));
             }
 
-            // 2. Mapeo de claim lista "roles" (Azure AD / Entra ID)
+            // roles: ["Admin", "Tecnico"]
             List<String> roles = jwt.getClaimAsStringList("roles");
             if (roles != null) {
                 for (String role : roles) {
                     if (role != null && !role.isBlank()) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.trim().toUpperCase()));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_" + normalizeRole(role)));
+                    }
+                }
+            }
+
+            // groups: ["Admin"] (por si lo usas en Azure)
+            List<String> groups = jwt.getClaimAsStringList("groups");
+            if (groups != null) {
+                for (String group : groups) {
+                    if (group != null && !group.isBlank()) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_" + normalizeRole(group)));
                     }
                 }
             }
@@ -98,5 +110,10 @@ public class RoleSecurityConfig {
         });
 
         return converter;
+    }
+
+    private String normalizeRole(String role) {
+        return role.trim().toUpperCase()
+            .replace("ROLE_", "");
     }
 }

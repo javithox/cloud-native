@@ -1,21 +1,18 @@
-
 import { Injectable, OnDestroy } from '@angular/core';
-
+import { Router } from '@angular/router';
 import {
   MsalBroadcastService,
   MsalService
 } from '@azure/msal-angular';
-
 import {
   AccountInfo,
   EventMessage,
   EventType,
-  InteractionStatus
+  InteractionStatus,
+  AuthenticationResult
 } from '@azure/msal-browser';
-
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-
 import {
   AppRole,
   DEFAULT_ROLE,
@@ -33,72 +30,79 @@ export class AuthService implements OnDestroy {
 
   private readonly destroying$ = new Subject<void>();
 
-  private interactionStatus: InteractionStatus =
-    InteractionStatus.None;
+  private interactionStatus: InteractionStatus = InteractionStatus.None;
+  private pendingLogin = false;
 
   constructor(
     private readonly msalService: MsalService,
-    private readonly msalBroadcastService: MsalBroadcastService
+    private readonly msalBroadcastService: MsalBroadcastService,
+    private readonly router: Router
   ) {
+    // 1. Establecer inmediatamente la cuenta activa desde localStorage si existe
+    this.setActiveAccount();
 
-    /*
-     * Mantener actualizado el estado de interacción de MSAL.
-     */
+    // 2. Escuchar el cambio de estado de interacción sin disparar un login nuevo cada vez.
     this.msalBroadcastService.inProgress$
-      .pipe(
-        takeUntil(this.destroying$)
-      )
+      .pipe(takeUntil(this.destroying$))
       .subscribe((status: InteractionStatus) => {
         this.interactionStatus = status;
 
-        /*
-         * Cuando MSAL termina cualquier interacción,
-         * aseguramos que exista una cuenta activa.
-         */
         if (status === InteractionStatus.None) {
           this.setActiveAccount();
         }
       });
 
-    /*
-     * Login exitoso.
-     */
+    // 3. Escuchar eventos clave de MSAL para actualizar la cuenta activa
     this.msalBroadcastService.msalSubject$
       .pipe(
-        filter(
-          (msg: EventMessage) =>
-            msg.eventType === EventType.LOGIN_SUCCESS
+        filter((msg: EventMessage) =>
+          msg.eventType === EventType.LOGIN_SUCCESS ||
+          msg.eventType === EventType.HANDLE_REDIRECT_END ||
+          msg.eventType === EventType.ACQUIRE_TOKEN_SUCCESS
         ),
         takeUntil(this.destroying$)
       )
-      .subscribe(() => {
-        this.setActiveAccount();
+      .subscribe((msg: EventMessage) => {
+        const payload = msg.payload as AuthenticationResult;
+
+        if (payload?.account) {
+          this.msalService.instance.setActiveAccount(payload.account);
+        } else {
+          this.setActiveAccount();
+        }
+
+        if (msg.eventType === EventType.LOGIN_SUCCESS) {
+          this.pendingLogin = false;
+
+          const currentUrl = this.router.url;
+          const landingRoute = this.getLandingRoute(this.getRole());
+
+          if (currentUrl === '/login' || currentUrl === '/') {
+            this.router.navigate([landingRoute]);
+          }
+        }
+
       });
   }
 
   /**
-   * Indica si existe una sesión autenticada.
+   * Indica si existe una sesión autenticada activa.
    */
   isLoggedIn(): boolean {
-
     if (typeof window === 'undefined') {
       return false;
     }
 
-    const accounts =
-      this.msalService.instance.getAllAccounts();
+    const activeAccount = this.getActiveAccount();
+    const accounts = this.msalService.instance.getAllAccounts();
 
-    return (
-      accounts.length > 0 ||
-      this.getRole() !== null
-    );
+    return activeAccount !== null || accounts.length > 0;
   }
 
   /**
    * Devuelve la cuenta activa de MSAL.
    */
   getActiveAccount(): AccountInfo | null {
-
     return this.msalService.instance.getActiveAccount();
   }
 
@@ -106,32 +110,17 @@ export class AuthService implements OnDestroy {
    * Obtiene el rol almacenado.
    */
   getRole(): AppRole | null {
-
-    if (
-      typeof window === 'undefined' ||
-      typeof localStorage === 'undefined'
-    ) {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
       return null;
     }
 
-    const storedRole =
-      localStorage.getItem(
-        ROLE_STORAGE_KEY
-      ) as AppRole | null;
+    const storedRole = localStorage.getItem(ROLE_STORAGE_KEY) as AppRole | null;
 
-    if (
-      storedRole &&
-      Object.keys(ROLE_DEFINITIONS).includes(storedRole)
-    ) {
+    if (storedRole && Object.keys(ROLE_DEFINITIONS).includes(storedRole)) {
       return storedRole;
     }
 
-    /*
-     * Si no existe rol almacenado,
-     * intentar obtenerlo desde el token.
-     */
     const claimsRole = this.getRoleFromClaims();
-
     return claimsRole ?? null;
   }
 
@@ -139,17 +128,15 @@ export class AuthService implements OnDestroy {
    * Obtiene el rol desde los claims del token.
    */
   getRoleFromClaims(): AppRole | null {
-
-    const activeAccount =
-      this.msalService.instance.getActiveAccount();
+    const activeAccount = this.getActiveAccount();
 
     if (!activeAccount) {
       return null;
     }
 
-    const idTokenClaims =
-      activeAccount.idTokenClaims as
-        Record<string, unknown> | undefined;
+    const idTokenClaims = activeAccount.idTokenClaims as
+      | Record<string, unknown>
+      | undefined;
 
     if (!idTokenClaims) {
       return null;
@@ -165,19 +152,15 @@ export class AuthService implements OnDestroy {
       return null;
     }
 
-    const normalized =
-      String(rawRole).toLowerCase();
+    const normalized = String(rawRole).toLowerCase();
 
     const mapping: Record<string, AppRole> = {
       admin: 'Admin',
       administrador: 'Admin',
-
       tecnico: 'Técnico',
       technician: 'Técnico',
-
       estudiante: 'Estudiante',
       student: 'Estudiante',
-
       auditor: 'Auditor',
       audit: 'Auditor'
     };
@@ -198,70 +181,67 @@ export class AuthService implements OnDestroy {
   getRoleDefinition(
     role?: AppRole | null
   ): ReturnType<typeof getRoleDefinition> {
+    return getRoleDefinition(role ?? this.getRole() ?? DEFAULT_ROLE);
+  }
 
-    return getRoleDefinition(
-      role ??
-      this.getRole() ??
-      DEFAULT_ROLE
-    );
+  getLandingRoute(role?: AppRole | null): string {
+    const selectedRole = role ?? this.getRole() ?? DEFAULT_ROLE;
+
+    switch (selectedRole) {
+      case 'Auditor':
+        return '/audit';
+      case 'Admin':
+      case 'Técnico':
+      case 'Estudiante':
+      default:
+        return '/dashboard';
+    }
   }
 
   /**
    * Comprueba permisos de una ruta.
    */
   canAccessRoute(route: string): boolean {
-
-    return canAccessRoute(
-      this.getRole(),
-      route
-    );
+    return canAccessRoute(this.getRole(), route);
   }
 
   /**
    * Guarda el rol seleccionado.
    */
   setRole(role: AppRole): void {
-
-    if (
-      typeof window === 'undefined' ||
-      typeof localStorage === 'undefined'
-    ) {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
       return;
     }
 
-    localStorage.setItem(
-      ROLE_STORAGE_KEY,
-      role
-    );
+    localStorage.setItem(ROLE_STORAGE_KEY, role);
   }
 
   /**
    * Inicia sesión con Microsoft Entra ID.
-   *
-   * Evita iniciar una segunda interacción
-   * mientras MSAL ya está procesando una.
    */
   login(role?: AppRole): void {
-
     if (role) {
       this.setRole(role);
     }
 
-    /*
-     * Evitar interaction_in_progress.
-     */
-    if (
-      this.interactionStatus !==
-      InteractionStatus.None
-    ) {
-      console.warn(
-        'MSAL ya está procesando una interacción:',
-        this.interactionStatus
-      );
-
+    if (this.pendingLogin) {
       return;
     }
 
+    if (
+      this.interactionStatus === InteractionStatus.Logout ||
+      this.interactionStatus === InteractionStatus.AcquireToken ||
+      this.interactionStatus === InteractionStatus.HandleRedirect
+    ) {
+      return;
+    }
+
+    this.pendingLogin = true;
+    this.executeLoginRedirect();
+  }
+
+  private executeLoginRedirect(): void {
+    this.pendingLogin = true;
     this.msalService.loginRedirect({
       scopes: [
         'User.Read',
@@ -270,11 +250,7 @@ export class AuthService implements OnDestroy {
     });
   }
 
-  /**
-   * Obtiene los scopes de nuestra API.
-   */
   private getProtectedResourceScopes(): string[] {
-
     return [
       'api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'
     ];
@@ -284,48 +260,40 @@ export class AuthService implements OnDestroy {
    * Cierra la sesión.
    */
   logout(): void {
-
-    if (
-      typeof window !== 'undefined' &&
-      typeof localStorage !== 'undefined'
-    ) {
-      localStorage.removeItem(
-        ROLE_STORAGE_KEY
-      );
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem(ROLE_STORAGE_KEY);
     }
 
     this.msalService.instance.setActiveAccount(null);
 
     this.msalService.logoutRedirect({
-      postLogoutRedirectUri:
-        window.location.origin + '/login'
+      postLogoutRedirectUri: window.location.origin + '/login'
     });
   }
 
   /**
-   * Establece automáticamente la primera cuenta
-   * como cuenta activa si no existe una.
+   * Establece automáticamente la primera cuenta como cuenta activa si no existe una.
    */
+  syncActiveAccount(): void {
+    this.setActiveAccount();
+  }
+
   private setActiveAccount(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
 
-    const accounts =
-      this.msalService.instance.getAllAccounts();
+    const activeAccount = this.msalService.instance.getActiveAccount();
 
-    if (
-      accounts.length > 0 &&
-      !this.msalService.instance.getActiveAccount()
-    ) {
-      this.msalService.instance.setActiveAccount(
-        accounts[0]
-      );
+    if (!activeAccount) {
+      const accounts = this.msalService.instance.getAllAccounts();
+      if (accounts.length > 0) {
+        this.msalService.instance.setActiveAccount(accounts[0]);
+      }
     }
   }
 
-  /**
-   * Liberar suscripciones.
-   */
   ngOnDestroy(): void {
-
     this.destroying$.next();
     this.destroying$.complete();
   }

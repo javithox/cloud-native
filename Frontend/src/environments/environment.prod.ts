@@ -25,7 +25,7 @@ export const environment = {
     postLogoutRedirectUri: globalThis.location?.origin ?? 'https://campuslab.ddns.net/',
     protectedResourceScopes: ['api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'],
   },
-  apiBaseUrl: runtime.apiBaseUrl || apiUrl('8080'),
+  apiBaseUrl: runtime.apiBaseUrl || apiUrl('8082'),
 };
 
 export {};

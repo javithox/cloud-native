@@ -28,7 +28,7 @@ export const environment = {
   apiBookingsUrl: runtime.apiBookingsUrl || getApiUrl('8082'),
   apiAuditUrl: runtime.apiAuditUrl || getApiUrl('8083'),
   apiReportUrl: runtime.apiReportUrl || getApiUrl('8085'),
-  apiBaseUrl: runtime.apiBaseUrl || getApiUrl('8080'),
+  apiBaseUrl: runtime.apiBaseUrl || getApiUrl('8082'),
   azure: {
     clientId: 'e03479f6-d22d-4624-aa81-6e724d570329',
     tenantId: 'bda559f7-26d8-4062-88a2-da66f2286b5f',

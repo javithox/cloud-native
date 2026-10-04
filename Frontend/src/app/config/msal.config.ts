@@ -1,4 +1,3 @@
-
 import {
   BrowserCacheLocation,
   InteractionType,
@@ -24,18 +23,16 @@ export function msalInstanceFactory(): PublicClientApplication {
     } as unknown as PublicClientApplication;
   }
 
-  return new PublicClientApplication({
+  const pca = new PublicClientApplication({
     auth: {
       clientId: environment.azure.clientId,
       authority: environment.azure.authority,
       redirectUri: environment.azure.redirectUri,
       postLogoutRedirectUri: environment.azure.postLogoutRedirectUri,
     },
-
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage,
     },
-
     system: {
       loggerOptions: {
         loggerCallback: (level, message, containsPii) => {
@@ -47,52 +44,48 @@ export function msalInstanceFactory(): PublicClientApplication {
             case LogLevel.Error:
               console.error(message);
               return;
-
             case LogLevel.Warning:
               console.warn(message);
               return;
-
             default:
               return;
           }
         },
-
         logLevel: environment.production
           ? LogLevel.Error
           : LogLevel.Warning,
-
         piiLoggingEnabled: false,
       },
     },
   });
+
+  return pca;
 }
 
 export function msalGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
-
     authRequest: {
       scopes: [
         'User.Read',
         ...environment.azure.protectedResourceScopes,
       ],
     },
-
     loginFailedRoute: '/login-failed',
   };
 }
 
 export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
-  const protectedResourceMap =
-    new Map<string, Array<string> | null>();
+  const protectedResourceMap = new Map<string, Array<string> | null>();
 
   const protectedResources = [
-    environment.apiBaseUrl,
     environment.apiCatalogUrl,
     environment.apiBookingsUrl,
     environment.apiReportUrl,
     environment.apiAuditUrl,
   ];
+
+  const scopes = [...environment.azure.protectedResourceScopes];
 
   for (const resource of protectedResources) {
     if (!resource) {
@@ -100,11 +93,7 @@ export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
     }
 
     const normalizedResource = resource.replace(/\/+$/, '');
-
-    protectedResourceMap.set(
-      `${normalizedResource}/*`,
-      environment.azure.protectedResourceScopes
-    );
+    protectedResourceMap.set(`${normalizedResource}/*`, scopes);
   }
 
   return {

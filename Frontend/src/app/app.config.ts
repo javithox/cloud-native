@@ -1,6 +1,7 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { IPublicClientApplication } from '@azure/msal-browser';
 import { routes } from './app.routes';
 import { 
   MsalService, 
@@ -16,6 +17,11 @@ import {
   msalGuardConfigFactory, 
   msalInterceptorConfigFactory 
 } from './config/msal.config';
+
+// 1. Función para inicializar la instancia de MSAL antes del arranque de Angular
+export function MSALInitializerFactory(msalInstance: IPublicClientApplication): () => Promise<void> {
+  return () => msalInstance.initialize();
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -37,6 +43,13 @@ export const appConfig: ApplicationConfig = {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: MsalInterceptor,
+      multi: true
+    },
+    // 2. Registro del APP_INITIALIZER
+    {
+      provide: APP_INITIALIZER,
+      useFactory: MSALInitializerFactory,
+      deps: [MSAL_INSTANCE],
       multi: true
     },
     MsalService,

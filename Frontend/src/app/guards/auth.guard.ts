@@ -9,6 +9,16 @@ export const AuthGuard: CanActivateFn = (route) => {
   const allowedRoles = (route.data['roles'] as AppRole[] | undefined) ?? [];
   const routePath = route.routeConfig?.path ?? '';
 
+  if (routePath === 'login') {
+    if (authService.isLoggedIn()) {
+      const landingRoute = authService.getLandingRoute(authService.getRole());
+      router.navigate([landingRoute]);
+      return false;
+    }
+
+    return true;
+  }
+
   if (!authService.isLoggedIn()) {
     router.navigate(['/login']);
     return false;

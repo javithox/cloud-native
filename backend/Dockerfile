@@ -19,5 +19,5 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /build/app.jar /app/app.jar
 ENV SPRING_PROFILES_ACTIVE=docker
-EXPOSE 8080
+EXPOSE 8080 8081 8082 8083 8084 8085
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
