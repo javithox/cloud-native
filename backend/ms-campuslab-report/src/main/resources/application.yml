@@ -5,10 +5,10 @@ spring:
   application:
     name: ms-campuslab-report
   datasource:
-    url: jdbc:h2:file:/home/oem/Desktop/cloud-native/backend/data/bookingsdb;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:campuslab_report}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:campuslab}
+    password: ${DB_PASSWORD:campuslab}
   jpa:
     hibernate:
       ddl-auto: update

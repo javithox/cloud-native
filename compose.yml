@@ -4,9 +4,9 @@ services:
     image: postgres:16-alpine
     container_name: campuslab-postgres
     environment:
-      POSTGRES_DB: campuslab
-      POSTGRES_USER: campuslab
-      POSTGRES_PASSWORD: campuslab
+      POSTGRES_DB: ${POSTGRES_DB:-campuslab}
+      POSTGRES_USER: ${POSTGRES_USER:-campuslab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
     command: ["postgres", "-c", "shared_buffers=32MB", "-c", "max_connections=30"]
     ports:
       - "5432:5432"
@@ -86,9 +86,13 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: campuslab_bookings
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_bookings
-      SPRING_DATASOURCE_USERNAME: campuslab
-      SPRING_DATASOURCE_PASSWORD: campuslab
+      DB_HOST: ${POSTGRES_HOST:-postgres}
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USERNAME: ${POSTGRES_USER:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/campuslab_bookings
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-campuslab}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -124,9 +128,13 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: campuslab_catalog
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_catalog
-      SPRING_DATASOURCE_USERNAME: campuslab
-      SPRING_DATASOURCE_PASSWORD: campuslab
+      DB_HOST: ${POSTGRES_HOST:-postgres}
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USERNAME: ${POSTGRES_USER:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/campuslab_catalog
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-campuslab}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -160,9 +168,13 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: campuslab_audit
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_audit
-      SPRING_DATASOURCE_USERNAME: campuslab
-      SPRING_DATASOURCE_PASSWORD: campuslab
+      DB_HOST: ${POSTGRES_HOST:-postgres}
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USERNAME: ${POSTGRES_USER:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/campuslab_audit
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-campuslab}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -195,12 +207,6 @@ services:
       - "8084:8084"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DB_NAME: campuslab_notify
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_notify
-      SPRING_DATASOURCE_USERNAME: campuslab
-      SPRING_DATASOURCE_PASSWORD: campuslab
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       RABBITMQ_HOST: rabbitmq
@@ -232,9 +238,13 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: campuslab_report
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/campuslab_report
-      SPRING_DATASOURCE_USERNAME: campuslab
-      SPRING_DATASOURCE_PASSWORD: campuslab
+      DB_HOST: ${POSTGRES_HOST:-postgres}
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      DB_USERNAME: ${POSTGRES_USER:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:${POSTGRES_PORT:-5432}/campuslab_report
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-campuslab}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -265,11 +275,11 @@ services:
     ports:
       - "4200:4200"
     environment:
-      API_CATALOG_URL: http://${EC2_PUBLIC_HOST:-localhost}:8081/api
-      API_BOOKINGS_URL: http://${EC2_PUBLIC_HOST:-localhost}:8082/api
-      API_REPORT_URL: http://${EC2_PUBLIC_HOST:-localhost}:8085/api
-      API_AUDIT_URL: http://${EC2_PUBLIC_HOST:-localhost}:8083/api
-      API_BASE_URL: http://${EC2_PUBLIC_HOST:-localhost}:8080/api
+      API_CATALOG_URL: ${API_CATALOG_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8081/api}
+      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8082/api}
+      API_REPORT_URL: ${API_REPORT_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8085/api}
+      API_AUDIT_URL: ${API_AUDIT_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8083/api}
+      API_BASE_URL: ${API_BASE_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8080/api}
     depends_on:
       - ms-campuslab-bookings
       - ms-campuslab-catalog
