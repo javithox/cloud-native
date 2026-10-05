@@ -1,11 +1,20 @@
 #!/bin/sh
-set -eu
-cat > /app/dist/runtime-config.js <<EOF
+
+set -e
+
+cat > /usr/share/nginx/html/runtime-config.js <<EOF
 window.__env = {
-  apiCatalogUrl: "${API_CATALOG_URL:-}",
-  apiBookingsUrl: "${API_BOOKINGS_URL:-}",
-  apiReportUrl: "${API_REPORT_URL:-}",
-  apiAuditUrl: "${API_AUDIT_URL:-}"
+  apiCatalogUrl: "/api/catalog",
+  apiBookingsUrl: "/api/bookings",
+  apiReportUrl: "/api/report",
+  apiAuditUrl: "/api/audit",
+  apiBaseUrl: "/api"
 };
 EOF
-exec node /app/server.js
+
+echo "========================================="
+echo "Runtime configuration:"
+cat /usr/share/nginx/html/runtime-config.js
+echo "========================================="
+
+exec nginx -g "daemon off;"

@@ -9,23 +9,55 @@ declare global {
 }
 
 const runtime = globalThis.__env ?? {};
-const apiOrigin = globalThis.location?.origin ?? 'https://campuslab.ddns.net';
-const apiUrl = (port: string) => `${apiOrigin.replace(/:\d+$/, '')}:${port}/api/`;
+
+const apiOrigin =
+  globalThis.location?.origin ?? 'https://campuslab.ddns.net';
+
 export const environment = {
   production: true,
-  apiCatalogUrl: runtime.apiCatalogUrl || apiUrl('8081'),
-  apiBookingsUrl: runtime.apiBookingsUrl || apiUrl('8082'),
-  apiReportUrl: runtime.apiReportUrl || apiUrl('8085'),
-  apiAuditUrl: runtime.apiAuditUrl || apiUrl('8083'),
+
+  // APIs mediante Nginx
+  apiCatalogUrl:
+    runtime.apiCatalogUrl ||
+    `${apiOrigin}/api/catalog/`,
+
+  apiBookingsUrl:
+    runtime.apiBookingsUrl ||
+    `${apiOrigin}/api/bookings/`,
+
+  apiReportUrl:
+    runtime.apiReportUrl ||
+    `${apiOrigin}/api/report/`,
+
+  apiAuditUrl:
+    runtime.apiAuditUrl ||
+    `${apiOrigin}/api/audit/`,
+
+  apiBaseUrl:
+    runtime.apiBaseUrl ||
+    `${apiOrigin}/api/`,
+
   azure: {
     clientId: 'e03479f6-d22d-4624-aa81-6e724d570329',
-    tenantId: 'bda559f7-26d8-4062-88a2-da66f2286b5f',
-    authority: 'https://login.microsoftonline.com/bda559f7-26d8-4062-88a2-da66f2286b5f',
-    redirectUri: globalThis.location?.origin ?? 'https://campuslab.ddns.net/',
-    postLogoutRedirectUri: globalThis.location?.origin ?? 'https://campuslab.ddns.net/',
-    protectedResourceScopes: ['api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'],
+
+    tenantId:
+      'bda559f7-26d8-4062-88a2-da66f2286b5f',
+
+    authority:
+      'https://login.microsoftonline.com/bda559f7-26d8-4062-88a2-da66f2286b5f',
+
+    redirectUri:
+      globalThis.location?.origin ??
+      'https://campuslab.ddns.net',
+
+    postLogoutRedirectUri:
+      globalThis.location?.origin ??
+      'https://campuslab.ddns.net',
+
+    protectedResourceScopes: [
+      'api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'
+    ],
   },
-  apiBaseUrl: runtime.apiBaseUrl || apiUrl('8082'),
 };
 
 export {};

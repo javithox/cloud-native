@@ -13,7 +13,7 @@ const runtime = globalThis.__env ?? {};
 // Construye la URL respetando el protocolo actual (http/https) y el dominio (campuslab.ddns.net)
 const getApiUrl = (port: string): string => {
   if (typeof window === 'undefined' || !globalThis.location?.hostname) {
-    return `https://campuslab.ddns.net:${port}/api`;
+    return `http://localhost:${port}/api`;
   }
 
   const protocol = globalThis.location.protocol; // 'https:' o 'http:'
@@ -33,8 +33,8 @@ export const environment = {
     clientId: 'e03479f6-d22d-4624-aa81-6e724d570329',
     tenantId: 'bda559f7-26d8-4062-88a2-da66f2286b5f',
     authority: 'https://login.microsoftonline.com/bda559f7-26d8-4062-88a2-da66f2286b5f',
-    redirectUri: typeof window !== 'undefined' ? globalThis.location.origin : 'https://campuslab.ddns.net/',
-    postLogoutRedirectUri: typeof window !== 'undefined' ? globalThis.location.origin : 'https://campuslab.ddns.net/',
+    redirectUri: typeof window !== 'undefined' ? globalThis.location.origin : 'http://localhost/',
+    postLogoutRedirectUri: typeof window !== 'undefined' ? globalThis.location.origin : 'http://localhost/',
     protectedResourceScopes: ['api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'],
   }
 };
