@@ -4,6 +4,9 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AuthService } from './services/auth.service';
 import { getRoleDefinition, ROLE_DEFINITIONS } from './services/role-permissions';
+import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
+import { InteractionStatus } from '@azure/msal-browser';
+import { of } from 'rxjs';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -19,7 +22,16 @@ describe('App', () => {
             getRole: () => null,
             logout: () => undefined,
             getRoleDefinition: () => getRoleDefinition(null),
+            syncActiveAccount: () => undefined,
           },
+        },
+        {
+          provide: MsalService,
+          useValue: { handleRedirectObservable: () => of(null) },
+        },
+        {
+          provide: MsalBroadcastService,
+          useValue: { inProgress$: of(InteractionStatus.None) },
         },
       ],
     }).compileComponents();
@@ -48,8 +60,8 @@ describe('App', () => {
       return segments.some((item) => route === item || route.startsWith(`${item}/`));
     };
 
-    expect(canAccessNestedBooking('Estudiante', '/bookings/new')).toBeTrue();
-    expect(canAccessNestedBooking('Técnico', '/catalog/new')).toBeTrue();
-    expect(canAccessNestedBooking('Admin', '/catalog/12/edit')).toBeTrue();
+    expect(canAccessNestedBooking('Estudiante', '/bookings/new')).toBe(true);
+    expect(canAccessNestedBooking('Técnico', '/catalog/new')).toBe(true);
+    expect(canAccessNestedBooking('Admin', '/catalog/12/edit')).toBe(true);
   });
 });

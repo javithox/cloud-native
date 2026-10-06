@@ -14,9 +14,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
   kafka:
@@ -35,7 +32,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://login.microsoftonline.com/${TENANT_ID:aaaa-bbbb-cccc-dddd}/v2.0
+          issuer-uri: https://login.microsoftonline.com/${TENANT_ID:bda559f7-26d8-4062-88a2-da66f2286b5f}/v2.0
 
 campuslab:
   catalog:

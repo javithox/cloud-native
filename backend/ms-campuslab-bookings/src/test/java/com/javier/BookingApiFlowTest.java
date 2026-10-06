@@ -6,22 +6,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,36 +32,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 class BookingApiFlowTest {
 
-    @Configuration
-    static class TestSecurityConfig {
-        @Bean
-        JwtDecoder jwtDecoder() {
-            return new JwtDecoder() {
-                @Override
-                public Jwt decode(String token) throws JwtException {
-                    return Jwt.withTokenValue(token)
-                            .header("alg", "none")
-                            .claim("sub", "student")
-                            .claim("roles", java.util.List.of("ESTUDIANTE"))
-                            .build();
-                }
-            };
-        }
-    }
-
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private BookingRepository bookingRepository;
 
-    @MockBean
+    @MockitoBean
     private CatalogClient catalogClient;
 
-    @MockBean
+    @MockitoBean
     private KafkaTemplate<String, String> kafkaTemplate;
 
-    @MockBean
+    @MockitoBean
     private RabbitTemplate rabbitTemplate;
 
     @BeforeEach
@@ -100,7 +79,7 @@ class BookingApiFlowTest {
             """;
 
         mockMvc.perform(post("/api/bookings")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer student-token")
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ESTUDIANTE")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
                 .andExpect(status().isCreated());

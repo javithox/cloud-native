@@ -8,16 +8,16 @@ services:
     image: postgres:15-alpine
     container_name: campuslab-postgres
     environment:
-      POSTGRES_MULTIPLE_DATABASES: campuslab_catalog,campuslab_bookings,campuslab_audit,campuslab_report
-      POSTGRES_USER: campuslab
-      POSTGRES_PASSWORD: campuslab
+      POSTGRES_DB: ${POSTGRES_DB:-campuslab}
+      POSTGRES_USER: ${POSTGRES_USER:-campuslab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ./docker/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U campuslab"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -27,9 +27,12 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: campuslab-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
     networks:
       - campuslab-net
 
@@ -37,7 +40,7 @@ services:
     image: apache/kafka:3.9.0
     container_name: campuslab-kafka
     ports:
-      - "9092:9092"
+      - "${KAFKA_PORT:-9092}:9092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -59,22 +62,22 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: ms-campuslab-catalog
+        MODULE_NAME: ms-campuslab-catalog
     container_name: ms-campuslab-catalog
     ports:
-      - "8081:8081"
+      - "${CATALOG_PORT:-8081}:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_catalog
-      DB_USERNAME: campuslab
-      DB_PASSWORD: campuslab
+      DB_USERNAME: ${POSTGRES_USER:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USER: guest
-      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
     depends_on:
       postgres:
         condition: service_healthy
@@ -90,22 +93,23 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: ms-campuslab-bookings
+        MODULE_NAME: ms-campuslab-bookings
     container_name: ms-campuslab-bookings
     ports:
-      - "8082:8082"
+      - "${BOOKINGS_PORT:-8082}:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_bookings
-      DB_USERNAME: campuslab
-      DB_PASSWORD: campuslab
+      DB_USERNAME: ${POSTGRES_USER:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      TENANT_ID: ${TENANT_ID:-bda559f7-26d8-4062-88a2-da66f2286b5f}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USER: guest
-      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
     depends_on:
       postgres:
         condition: service_healthy
@@ -121,22 +125,22 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: ms-campuslab-audit
+        MODULE_NAME: ms-campuslab-audit
     container_name: ms-campuslab-audit
     ports:
-      - "8083:8083"
+      - "${AUDIT_PORT:-8083}:8083"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_audit
-      DB_USERNAME: campuslab
-      DB_PASSWORD: campuslab
+      DB_USERNAME: ${POSTGRES_USER:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USER: guest
-      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
     depends_on:
       postgres:
         condition: service_healthy
@@ -152,17 +156,17 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: ms-campuslab-report
+        MODULE_NAME: ms-campuslab-report
     container_name: ms-campuslab-report
     ports:
-      - "8085:8085"
+      - "${REPORT_PORT:-8085}:8085"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_report
-      DB_USERNAME: campuslab
-      DB_PASSWORD: campuslab
+      DB_USERNAME: ${POSTGRES_USER:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       postgres:
@@ -179,17 +183,17 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: ms-campuslab-notify
+        MODULE_NAME: ms-campuslab-notify
     container_name: ms-campuslab-notify
     ports:
-      - "8084:8084"
+      - "${NOTIFY_PORT:-8084}:8084"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8084
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USER: guest
-      RABBITMQ_PASSWORD: guest
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
     depends_on:
       rabbitmq:
         condition: service_started
@@ -202,7 +206,12 @@ services:
       dockerfile: Dockerfile
     container_name: campuslab-frontend
     ports:
-      - "4200:4200"
+      - "${FRONTEND_PORT:-4200}:4200"
+    environment:
+      API_CATALOG_URL: ${API_CATALOG_URL:-http://localhost:8081/api/catalog}
+      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://localhost:8082/api/bookings}
+      API_AUDIT_URL: ${API_AUDIT_URL:-http://localhost:8083/api/audit}
+      API_REPORT_URL: ${API_REPORT_URL:-http://localhost:8085/api/report}
     depends_on:
       - ms-campuslab-catalog
       - ms-campuslab-bookings

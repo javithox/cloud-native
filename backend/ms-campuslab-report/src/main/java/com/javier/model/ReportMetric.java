@@ -26,7 +26,7 @@ public class ReportMetric {
     @Column(nullable = false)
     private String dimension;
 
-    @Column(nullable = false)
+    @Column(name = "\"value\"", nullable = false)
     private Double value;
 
     @Column(nullable = false)

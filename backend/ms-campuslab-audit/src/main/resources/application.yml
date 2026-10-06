@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:campuslab_audit}
     driver-class-name: org.postgresql.Driver
-    username: ${DB_USER:campuslab}
+    username: ${DB_USERNAME:campuslab}
     password: ${DB_PASSWORD:campuslab}
   jpa:
     hibernate:

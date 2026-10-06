@@ -1,27 +1,24 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/${DB_NAME:campuslab_bookings}
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:campuslab_bookings}
     driver-class-name: org.postgresql.Driver
-    username: campuslab
-    password: campuslab
+    username: ${DB_USERNAME:campuslab}
+    password: ${DB_PASSWORD:campuslab}
   jpa:
     hibernate:
       ddl-auto: update
     open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   rabbitmq:
-    host: rabbitmq
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 campuslab:
   catalog:
-    base-url: http://ms-campuslab-catalog:8081
+    base-url: ${CATALOG_BASE_URL:http://ms-campuslab-catalog:8081}

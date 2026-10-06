@@ -7,7 +7,7 @@ Aplicación multi-módulo de gestión de reservas y operaciones académicas para
 - Frontend: Angular 21
 - Backend: Spring Boot 4.1.1 + Java 21
 - Mensajería: Kafka + RabbitMQ
-- Persistencia: H2 en desarrollo (lista para migrar a Oracle/PostgreSQL)
+- Persistencia: PostgreSQL por microservicio mediante Docker Compose; perfiles locales H2 donde están configurados
 
 ## Módulos
 
@@ -60,13 +60,30 @@ Aplicación multi-módulo de gestión de reservas y operaciones académicas para
 - Node.js 20+
 - npm
 - Java 21
-- Maven
-- Kafka local en `localhost:9092`
-- RabbitMQ local en `localhost:5672`
+- Docker Engine con el plugin Docker Compose (opción recomendada)
+- Para ejecutar servicios fuera de Compose: Kafka en `localhost:9092` y RabbitMQ en `localhost:5672`
 
 ## Inicio rápido
 
-### 1. Frontend
+### Requisitos adicionales del backend
+
+- Docker Engine con el plugin Docker Compose
+- Copiar `.env.example` a `.env` y configurar credenciales/URLs del entorno
+
+### 1. Stack completo con PostgreSQL
+
+Desde la raíz del proyecto:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Compose crea las bases `campuslab_catalog`, `campuslab_bookings`, `campuslab_audit` y `campuslab_report` en el volumen PostgreSQL. El SQL de inicialización solo se ejecuta cuando el volumen se crea por primera vez.
+
+Para desarrollo local, configura en `.env` las cuatro variables `API_*_URL` con sus URLs `http://localhost:<puerto>/api/...` correspondientes. Para EC2, deben apuntar al dominio HTTPS que publica el proxy inverso.
+
+### 2. Frontend independiente
 
 ```bash
 cd Frontend
@@ -77,7 +94,7 @@ npm start
 La app queda disponible en:
 - `http://localhost:4200`
 
-### 2. Backend
+### 3. Backend
 
 Desde la raíz de `backend`:
 
@@ -86,17 +103,18 @@ chmod +x mvnw
 ./mvnw clean install
 ```
 
-Luego se pueden arrancar cada módulo en su carpeta correspondiente o utilizar IDEs para ejecutar cada clase principal:
+Para ejecutar servicios fuera de Compose, arranca cada comando en una terminal distinta desde la raíz del repositorio (con PostgreSQL, Kafka y RabbitMQ ya disponibles):
 
 ```bash
-cd backend/ms-campuslab-bookings
-./mvnw spring-boot:run
-
-cd ../ms-campuslab-audit
-./mvnw spring-boot:run
-
-cd ../ms-campuslab-report
-./mvnw spring-boot:run
+cd backend && ./mvnw spring-boot:run -pl ms-campuslab-catalog
+# En otra terminal:
+cd backend && ./mvnw spring-boot:run -pl ms-campuslab-bookings
+# En otra terminal:
+cd backend && ./mvnw spring-boot:run -pl ms-campuslab-audit
+# En otra terminal:
+cd backend && ./mvnw spring-boot:run -pl ms-campuslab-report
+# En otra terminal:
+cd backend && ./mvnw spring-boot:run -pl ms-campuslab-notify
 ```
 
 ## Endpoints principales
@@ -121,9 +139,9 @@ cd ../ms-campuslab-report
 - `GET /api/report/kpis`
 - `GET /api/report/metrics/{dimension}`
 
-## Nota de desarrollo
+## Nota de persistencia
 
-El proyecto está preparado para un entorno de desarrollo local con H2. Para producción, se recomienda sustituir la base H2 por Oracle o PostgreSQL y ajustar las propiedades de conexión en cada microservicio.
+Los servicios de catálogo, reservas, auditoría y reportes usan PostgreSQL por defecto. Las pruebas automatizadas usan H2 en memoria cuando corresponde. Cada servicio recibe host, puerto, nombre de base y credenciales desde variables de entorno.
 
 ## Estructura del repositorio
 
