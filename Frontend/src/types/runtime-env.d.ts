@@ -11,7 +11,6 @@ declare global {
         apiBookingsUrl?: string;
         apiReportUrl?: string;
         apiAuditUrl?: string;
-        apiBaseUrl?: string;
       }
     | undefined;
 }

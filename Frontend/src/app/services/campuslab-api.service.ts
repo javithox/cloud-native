@@ -44,15 +44,15 @@ export class CampusLabApiService {
   bookings(status?: string): Observable<Booking[]> {
     let params = new HttpParams();
     if (status) params = params.set('status', status);
-    return this.http.get<Booking[]>(this.endpoint(this.bookingsUrl, '/bookings'), { params });
+    return this.http.get<Booking[]>(this.endpoint(this.bookingsUrl, ''), { params });
   }
 
   updateBookingStatus(id: number, status: string): Observable<Booking> {
-    return this.http.put<Booking>(this.endpoint(this.bookingsUrl, `/bookings/${id}/status`), { status });
+    return this.http.put<Booking>(this.endpoint(this.bookingsUrl, `/${id}/status`), { status });
   }
 
   getBookingById(id: number): Observable<Booking> {
-    return this.http.get<Booking>(this.endpoint(this.bookingsUrl, `/bookings/${id}`));
+    return this.http.get<Booking>(this.endpoint(this.bookingsUrl, `/${id}`));
   }
 
   createBooking(payload: {
@@ -63,19 +63,19 @@ export class CampusLabApiService {
     endTime: string;
     notes?: string;
   }): Observable<Booking> {
-    return this.http.post<Booking>(this.endpoint(this.bookingsUrl, '/bookings'), payload);
+    return this.http.post<Booking>(this.endpoint(this.bookingsUrl, ''), payload);
   }
 
   deleteBooking(id: number): Observable<Booking> {
-    return this.http.delete<Booking>(this.endpoint(this.bookingsUrl, `/bookings/${id}`));
+    return this.http.delete<Booking>(this.endpoint(this.bookingsUrl, `/${id}`));
   }
 
   resources(): Observable<Resource[]> {
-    return this.http.get<Resource[]>(this.endpoint(this.catalogUrl, '/catalog/resources'));
+    return this.http.get<Resource[]>(this.endpoint(this.catalogUrl, '/resources'));
   }
 
   getResourceById(id: number): Observable<Resource> {
-    return this.http.get<Resource>(this.endpoint(this.catalogUrl, `/catalog/resources/${id}`));
+    return this.http.get<Resource>(this.endpoint(this.catalogUrl, `/resources/${id}`));
   }
 
   createResource(payload: {
@@ -85,7 +85,7 @@ export class CampusLabApiService {
     type: string;
     totalStock: number;
   }): Observable<Resource> {
-    return this.http.post<Resource>(this.endpoint(this.catalogUrl, '/catalog/resources'), payload);
+    return this.http.post<Resource>(this.endpoint(this.catalogUrl, '/resources'), payload);
   }
 
   updateResource(id: number, payload: {
@@ -95,20 +95,20 @@ export class CampusLabApiService {
     type?: string;
     totalStock?: number;
   }): Observable<Resource> {
-    return this.http.put<Resource>(this.endpoint(this.catalogUrl, `/catalog/resources/${id}/details`), payload);
+    return this.http.put<Resource>(this.endpoint(this.catalogUrl, `/resources/${id}/details`), payload);
   }
 
   deleteResource(id: number): Observable<Resource> {
-    return this.http.delete<Resource>(this.endpoint(this.catalogUrl, `/catalog/resources/${id}`));
+    return this.http.delete<Resource>(this.endpoint(this.catalogUrl, `/resources/${id}`));
   }
 
   kpis(): Observable<Record<string, number>> {
-    return this.http.get<Record<string, number>>(this.endpoint(this.reportUrl, '/report/kpis'), {
+    return this.http.get<Record<string, number>>(this.endpoint(this.reportUrl, '/kpis'), {
       params: { range: 'last24h' },
     });
   }
 
   audit(): Observable<Array<{ id?: number; eventType?: string; correlationId?: string; traceId?: string; createdAt?: string; payload?: string; timestamp?: number }>> {
-    return this.http.get<Array<{ id?: number; eventType?: string; correlationId?: string; traceId?: string; createdAt?: string; payload?: string; timestamp?: number }>>(this.endpoint(this.auditUrl, '/audit/timeline'));
+    return this.http.get<Array<{ id?: number; eventType?: string; correlationId?: string; traceId?: string; createdAt?: string; payload?: string; timestamp?: number }>>(this.endpoint(this.auditUrl, '/timeline'));
   }
 }

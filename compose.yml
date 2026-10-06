@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
     command: ["postgres", "-c", "shared_buffers=32MB", "-c", "max_connections=30"]
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - ./docker/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql:ro
       - campuslab-postgres-data:/var/lib/postgresql/data
@@ -32,8 +32,8 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     volumes:
       - campuslab-rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
@@ -48,7 +48,7 @@ services:
     image: apache/kafka:3.9.0
     container_name: campuslab-kafka
     ports:
-      - "9092:9092"
+      - "127.0.0.1:9092:9092"
     environment:
       KAFKA_HEAP_OPTS: "-Xms128m -Xmx256m"
       KAFKA_NODE_ID: 1
@@ -82,7 +82,7 @@ services:
         MODULE_NAME: ms-campuslab-bookings
     container_name: ms-campuslab-bookings
     ports:
-      - "8082:8082"
+      - "127.0.0.1:8082:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: campuslab_bookings
@@ -103,7 +103,7 @@ services:
       RABBITMQ_PASSWORD: guest
       CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
       TENANT_ID: bda559f7-26d8-4062-88a2-da66f2286b5f
-      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
+      FRONTEND_ALLOWED_ORIGINS: "http://localhost:4200,https://campuslab.ddns.net"
       SERVER_PORT: 8082
     depends_on:
       postgres:
@@ -124,7 +124,7 @@ services:
         MODULE_NAME: ms-campuslab-catalog
     container_name: ms-campuslab-catalog
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: campuslab_catalog
@@ -143,7 +143,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
-      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
+      FRONTEND_ALLOWED_ORIGINS: "http://localhost:4200,https://campuslab.ddns.net"
       SERVER_PORT: 8081
     depends_on:
       postgres:
@@ -164,7 +164,7 @@ services:
         MODULE_NAME: ms-campuslab-audit
     container_name: ms-campuslab-audit
     ports:
-      - "8083:8083"
+      - "127.0.0.1:8083:8083"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: campuslab_audit
@@ -183,7 +183,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
-      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
+      FRONTEND_ALLOWED_ORIGINS: "http://localhost:4200,https://campuslab.ddns.net"
       SERVER_PORT: 8083
     depends_on:
       postgres:
@@ -204,7 +204,7 @@ services:
         MODULE_NAME: ms-campuslab-notify
     container_name: ms-campuslab-notify
     ports:
-      - "8084:8084"
+      - "127.0.0.1:8084:8084"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -213,7 +213,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
-      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
+      FRONTEND_ALLOWED_ORIGINS: "http://localhost:4200,https://campuslab.ddns.net"
       SERVER_PORT: 8084
     depends_on:
       postgres:
@@ -234,7 +234,7 @@ services:
         MODULE_NAME: ms-campuslab-report
     container_name: ms-campuslab-report
     ports:
-      - "8085:8085"
+      - "127.0.0.1:8085:8085"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_NAME: campuslab_report
@@ -253,7 +253,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
       RABBITMQ_PASSWORD: guest
-      FRONTEND_ALLOWED_ORIGINS: "http://${EC2_PUBLIC_HOST:-localhost}:4200,https://campuslab.ddns.net,http://campuslab.ddns.net"
+      FRONTEND_ALLOWED_ORIGINS: "http://localhost:4200,https://campuslab.ddns.net"
       SERVER_PORT: 8085
     depends_on:
       postgres:
@@ -273,13 +273,12 @@ services:
       dockerfile: Dockerfile
     container_name: campuslab-frontend
     ports:
-      - "4200:4200"
+      - "127.0.0.1:4200:4200"
     environment:
-      API_CATALOG_URL: ${API_CATALOG_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8081/api}
-      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8082/api}
-      API_REPORT_URL: ${API_REPORT_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8085/api}
-      API_AUDIT_URL: ${API_AUDIT_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8083/api}
-      API_BASE_URL: ${API_BASE_URL:-http://${EC2_PUBLIC_HOST:-localhost}:8080/api}
+      API_CATALOG_URL: ${API_CATALOG_URL:-https://campuslab.ddns.net/api/catalog/}
+      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-https://campuslab.ddns.net/api/bookings/}
+      API_REPORT_URL: ${API_REPORT_URL:-https://campuslab.ddns.net/api/report/}
+      API_AUDIT_URL: ${API_AUDIT_URL:-https://campuslab.ddns.net/api/audit/}
     depends_on:
       - ms-campuslab-bookings
       - ms-campuslab-catalog

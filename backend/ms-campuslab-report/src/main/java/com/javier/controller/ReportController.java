@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/report")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ReportController {
 

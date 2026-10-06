@@ -5,7 +5,7 @@
 
 set -e
 
-IP_EC2="13.217.3.213"
+IP_EC2="campuslab.ddns.net"
 PROJECT_NAME="campuslab"
 
 echo "╔════════════════════════════════════════════════════════╗"

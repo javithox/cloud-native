@@ -1,42 +1,19 @@
-declare global {
-  var __env: {
-    apiCatalogUrl?: string;
-    apiBookingsUrl?: string;
-    apiReportUrl?: string;
-    apiAuditUrl?: string;
-    apiBaseUrl?: string;
-  } | undefined;
-}
-
-const runtime = globalThis.__env ?? {};
-
-// Construye la URL respetando el protocolo actual (http/https) y el dominio (campuslab.ddns.net)
-const getApiUrl = (port: string): string => {
-  if (typeof window === 'undefined' || !globalThis.location?.hostname) {
-    return `http://localhost:${port}/api`;
-  }
-
-  const protocol = globalThis.location.protocol; // 'https:' o 'http:'
-  const hostname = globalThis.location.hostname; // 'campuslab.ddns.net' o 'localhost'
-
-  return `${protocol}//${hostname}:${port}/api`;
-};
-
 export const environment = {
-  production: true,
-  apiCatalogUrl: runtime.apiCatalogUrl || getApiUrl('8081'),
-  apiBookingsUrl: runtime.apiBookingsUrl || getApiUrl('8082'),
-  apiAuditUrl: runtime.apiAuditUrl || getApiUrl('8083'),
-  apiReportUrl: runtime.apiReportUrl || getApiUrl('8085'),
-  apiBaseUrl: runtime.apiBaseUrl || getApiUrl('8082'),
+  production: false,
+
+  apiCatalogUrl: 'http://localhost:8081/api/catalog/',
+  apiBookingsUrl: 'http://localhost:8082/api/bookings/',
+  apiReportUrl: 'http://localhost:8085/api/report/',
+  apiAuditUrl: 'http://localhost:8083/api/audit/',
+
   azure: {
     clientId: 'e03479f6-d22d-4624-aa81-6e724d570329',
     tenantId: 'bda559f7-26d8-4062-88a2-da66f2286b5f',
     authority: 'https://login.microsoftonline.com/bda559f7-26d8-4062-88a2-da66f2286b5f',
-    redirectUri: typeof window !== 'undefined' ? globalThis.location.origin : 'http://localhost/',
-    postLogoutRedirectUri: typeof window !== 'undefined' ? globalThis.location.origin : 'http://localhost/',
-    protectedResourceScopes: ['api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'],
+    redirectUri: 'http://localhost:4200',
+    postLogoutRedirectUri: 'http://localhost:4200',
+    protectedResourceScopes: [
+      'api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'
+    ],
   }
 };
-
-export {};

@@ -1,20 +1,16 @@
 #!/bin/sh
-
-set -e
+set -eu
 
 cat > /app/dist/runtime-config.js <<EOF
 window.__env = {
-  apiCatalogUrl: "${API_CATALOG_URL:-http://localhost:8081/api}",
-  apiBookingsUrl: "${API_BOOKINGS_URL:-http://localhost:8082/api}",
-  apiReportUrl: "${API_REPORT_URL:-http://localhost:8085/api}",
-  apiAuditUrl: "${API_AUDIT_URL:-http://localhost:8083/api}",
-  apiBaseUrl: "${API_BASE_URL:-http://localhost:8082/api}"
+  apiCatalogUrl: "${API_CATALOG_URL:-https://campuslab.ddns.net/api/catalog/}",
+  apiBookingsUrl: "${API_BOOKINGS_URL:-https://campuslab.ddns.net/api/bookings/}",
+  apiReportUrl: "${API_REPORT_URL:-https://campuslab.ddns.net/api/report/}",
+  apiAuditUrl: "${API_AUDIT_URL:-https://campuslab.ddns.net/api/audit/}"
 };
 EOF
 
-echo "========================================="
 echo "Runtime configuration:"
 cat /app/dist/runtime-config.js
-echo "========================================="
 
 exec node /app/server.js
