@@ -99,6 +99,7 @@ services:
       - "${BOOKINGS_PORT:-8082}:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      CAMPUSLAB_CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_bookings
