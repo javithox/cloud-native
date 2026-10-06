@@ -5,7 +5,7 @@ spring:
   application:
     name: ms-campuslab-audit
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:campuslab}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:campuslab_audit}
     driver-class-name: org.postgresql.Driver
     username: ${DB_USER:campuslab}
     password: ${DB_PASSWORD:campuslab}
@@ -17,7 +17,7 @@ spring:
       hibernate:
         format_sql: true
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: campuslab-audit-group
       auto-offset-reset: earliest

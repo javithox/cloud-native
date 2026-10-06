@@ -37,14 +37,14 @@ export class CampusLabApiService {
 
   private endpoint(baseUrl: string, path: string): string {
     const normalizedBase = baseUrl.replace(/\/$/, '');
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
     return `${normalizedBase}${normalizedPath}`;
   }
 
   bookings(status?: string): Observable<Booking[]> {
     let params = new HttpParams();
     if (status) params = params.set('status', status);
-    return this.http.get<Booking[]>(this.endpoint(this.bookingsUrl, ''), { params });
+    return this.http.get<Booking[]>(this.endpoint(this.bookingsUrl, '/'), { params });
   }
 
   updateBookingStatus(id: number, status: string): Observable<Booking> {
@@ -63,7 +63,7 @@ export class CampusLabApiService {
     endTime: string;
     notes?: string;
   }): Observable<Booking> {
-    return this.http.post<Booking>(this.endpoint(this.bookingsUrl, ''), payload);
+    return this.http.post<Booking>(this.endpoint(this.bookingsUrl, '/'), payload);
   }
 
   deleteBooking(id: number): Observable<Booking> {
