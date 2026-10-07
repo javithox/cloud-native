@@ -35,7 +35,6 @@ services:
       - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
     networks:
       - campuslab-net
-
   kafka:
     image: apache/kafka:3.9.0
     container_name: campuslab-kafka
@@ -44,16 +43,21 @@ services:
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://campuslab-kafka:9092
+
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@campuslab-kafka:9093
+
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 1
+
     networks:
       - campuslab-net
 
@@ -99,6 +103,7 @@ services:
       - "${BOOKINGS_PORT:-8082}:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       CAMPUSLAB_CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
       DB_HOST: postgres
       DB_PORT: 5432
@@ -209,10 +214,10 @@ services:
     ports:
       - "${FRONTEND_PORT:-4200}:4200"
     environment:
-      API_CATALOG_URL: ${API_CATALOG_URL:-http://localhost:8081/api/catalog}
-      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://localhost:8082/api/bookings}
-      API_AUDIT_URL: ${API_AUDIT_URL:-http://localhost:8083/api/audit}
-      API_REPORT_URL: ${API_REPORT_URL:-http://localhost:8085/api/report}
+      API_CATALOG_URL: https://campuslab.ddns.net/api/catalog/
+      API_BOOKINGS_URL: https://campuslab.ddns.net/api/bookings/
+      API_AUDIT_URL: https://campuslab.ddns.net/api/audit/
+      API_REPORT_URL: https://campuslab.ddns.net/api/report/
     depends_on:
       - ms-campuslab-catalog
       - ms-campuslab-bookings
