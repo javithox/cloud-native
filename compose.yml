@@ -111,6 +111,7 @@ services:
       DB_USERNAME: ${POSTGRES_USER:-campuslab}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
       TENANT_ID: ${TENANT_ID:-bda559f7-26d8-4062-88a2-da66f2286b5f}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-api://e03479f6-d22d-4624-aa81-6e724d570329}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
@@ -214,10 +215,10 @@ services:
     ports:
       - "${FRONTEND_PORT:-4200}:4200"
     environment:
-      API_CATALOG_URL: https://campuslab.ddns.net/api/catalog/
-      API_BOOKINGS_URL: https://campuslab.ddns.net/api/bookings/
-      API_AUDIT_URL: https://campuslab.ddns.net/api/audit/
-      API_REPORT_URL: https://campuslab.ddns.net/api/report/
+      API_CATALOG_URL: ${API_CATALOG_URL:-http://localhost:8081/api/catalog/}
+      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://localhost:8082/api/bookings/}
+      API_AUDIT_URL: ${API_AUDIT_URL:-http://localhost:8083/api/audit/}
+      API_REPORT_URL: ${API_REPORT_URL:-http://localhost:8085/api/report/}
     depends_on:
       - ms-campuslab-catalog
       - ms-campuslab-bookings

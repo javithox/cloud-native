@@ -32,7 +32,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://login.microsoftonline.com/${TENANT_ID:bda559f7-26d8-4062-88a2-da66f2286b5f}/v2.0
+          jwk-set-uri: https://login.microsoftonline.com/${TENANT_ID:bda559f7-26d8-4062-88a2-da66f2286b5f}/discovery/keys
 
 campuslab:
   catalog:
@@ -47,3 +47,7 @@ campuslab:
   kafka:
     topics:
       booking-events: booking-events-topic
+
+  security:
+    jwt:
+      audience: ${JWT_AUDIENCE:api://e03479f6-d22d-4624-aa81-6e724d570329}

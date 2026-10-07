@@ -13,6 +13,7 @@ import {
 } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import {
   AppRole,
   DEFAULT_ROLE,
@@ -152,7 +153,10 @@ export class AuthService implements OnDestroy {
       return null;
     }
 
-    const normalized = String(rawRole).toLowerCase();
+    const normalized = String(rawRole)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
 
     const mapping: Record<string, AppRole> = {
       admin: 'Admin',
@@ -251,9 +255,7 @@ export class AuthService implements OnDestroy {
   }
 
   private getProtectedResourceScopes(): string[] {
-    return [
-      'api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'
-    ];
+    return [...environment.azure.protectedResourceScopes];
   }
 
   /**
