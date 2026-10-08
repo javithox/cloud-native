@@ -93,6 +93,7 @@ export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
     }
 
     const normalizedResource = resource.replace(/\/+$/, '');
+    protectedResourceMap.set(normalizedResource, scopes);
     protectedResourceMap.set(`${normalizedResource}/*`, scopes);
   }
 

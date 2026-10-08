@@ -4,6 +4,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.text.Normalizer;
 
 @Configuration
 @EnableWebSecurity
@@ -57,6 +66,28 @@ public class RoleSecurityConfig {
             );
 
         return http.build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder(
+            @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri,
+            @Value("${TENANT_ID:bda559f7-26d8-4062-88a2-da66f2286b5f}") String tenantId,
+            @Value("${campuslab.security.jwt.audience}") String audience) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        OAuth2TokenValidator<Jwt> tenantAndAudienceValidator = jwt -> {
+            String issuer = jwt.getIssuer() == null ? "" : jwt.getIssuer().toString();
+            String expectedIssuer = "https://sts.windows.net/" + tenantId + "/";
+            boolean validTenant = tenantId.equals(jwt.getClaimAsString("tid"));
+            boolean validAudience = jwt.getAudience().contains(audience);
+            if (expectedIssuer.equals(issuer) && validTenant && validAudience) {
+                return OAuth2TokenValidatorResult.success();
+            }
+            return OAuth2TokenValidatorResult.failure(new OAuth2Error(
+                    "invalid_token", "El token no corresponde al tenant y API configurados", null));
+        };
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                JwtValidators.createDefault(), tenantAndAudienceValidator));
+        return decoder;
     }
 
     @Bean
@@ -115,6 +146,12 @@ public class RoleSecurityConfig {
                 }
             }
 
+            // App role emitido por Azure AD
+            String appRole = jwt.getClaimAsString("appRole");
+            if (appRole != null && !appRole.isBlank()) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + normalizeRole(appRole)));
+            }
+
             // Azure AD scope claim: "scp": "archivos"
             String scope = jwt.getClaimAsString("scp");
             if (scope != null && !scope.isBlank()) {
@@ -132,7 +169,9 @@ public class RoleSecurityConfig {
     }
 
     private String normalizeRole(String role) {
-        return role.trim().toUpperCase()
-            .replace("ROLE_", "");
+        String normalized = Normalizer.normalize(role.trim(), Normalizer.Form.NFD)
+            .replaceAll("\\p{M}+", "")
+            .toUpperCase();
+        return normalized.startsWith("ROLE_") ? normalized.substring(5) : normalized;
     }
 }

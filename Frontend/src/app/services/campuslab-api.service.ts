@@ -44,7 +44,7 @@ export class CampusLabApiService {
   bookings(status?: string): Observable<Booking[]> {
     let params = new HttpParams();
     if (status) params = params.set('status', status);
-    return this.http.get<Booking[]>(this.endpoint(this.bookingsUrl, '/'), { params });
+    return this.http.get<Booking[]>(this.bookingsUrl, { params });
   }
 
   updateBookingStatus(id: number, status: string): Observable<Booking> {
@@ -63,7 +63,7 @@ export class CampusLabApiService {
     endTime: string;
     notes?: string;
   }): Observable<Booking> {
-    return this.http.post<Booking>(this.endpoint(this.bookingsUrl, '/'), payload);
+    return this.http.post<Booking>(this.bookingsUrl, payload);
   }
 
   deleteBooking(id: number): Observable<Booking> {

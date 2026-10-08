@@ -53,7 +53,7 @@ Aplicación multi-módulo de gestión de reservas y operaciones académicas para
   - Endpoints lectura:
     - `GET /api/report/kpis`
     - `GET /api/report/metrics/{dimension}`
-  - Puerto: `8084`
+  - Puerto: `8085`
 
 ## Requisitos
 
@@ -81,7 +81,7 @@ docker compose up --build
 
 Compose crea las bases `campuslab_catalog`, `campuslab_bookings`, `campuslab_audit` y `campuslab_report` en el volumen PostgreSQL. El SQL de inicialización solo se ejecuta cuando el volumen se crea por primera vez.
 
-Para desarrollo local, configura en `.env` las cuatro variables `API_*_URL` con sus URLs `http://localhost:<puerto>/api/...` correspondientes. Para EC2, deben apuntar al dominio HTTPS que publica el proxy inverso.
+El `.env.example` ya usa URLs `localhost` para desarrollo. Para EC2, cambia las cuatro variables `API_*_URL` al dominio HTTPS publicado por el proxy inverso. No publiques el archivo `.env` ni reutilices las contraseñas de ejemplo en redes públicas.
 
 ### 2. Frontend independiente
 
@@ -142,6 +142,14 @@ cd backend && ./mvnw spring-boot:run -pl ms-campuslab-notify
 ## Nota de persistencia
 
 Los servicios de catálogo, reservas, auditoría y reportes usan PostgreSQL por defecto. Las pruebas automatizadas usan H2 en memoria cuando corresponde. Cada servicio recibe host, puerto, nombre de base y credenciales desde variables de entorno.
+
+## Autenticación de reservas (Microsoft Entra ID)
+
+El frontend obtiene automáticamente un access token para el scope configurado en `Frontend/src/environments/`; no pegues tokens JWT en el código, `.env`, logs ni tickets. El servicio de reservas valida la firma con las claves públicas de Entra, la vigencia del token y que `iss`, `tid` y `aud` correspondan al tenant y a `TENANT_ID`/`JWT_AUDIENCE`.
+
+La configuración actual de reservas está preparada para access tokens Entra **v1** (`iss` con `sts.windows.net`). Si la app registration se cambia para emitir tokens v2, debe actualizarse la versión del token junto con el emisor y el endpoint JWKS.
+
+Además de un token válido, las operaciones exigen roles de aplicación (`Admin`, `Tecnico`, `Estudiante` o `Auditor`) incluidos en `roles`, `role`, `groups` o `appRole`. Asígnalos desde la configuración de roles de la aplicación empresarial de Entra. Elegir un rol en la interfaz no otorga permisos al backend.
 
 ## Estructura del repositorio
 
