@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    @Value("${FRONTEND_ALLOWED_ORIGINS:http://localhost:4200,https://campuslab.ddns.net}")
+    @Value("${FRONTEND_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,https://campuslab.ddns.net}")
     private String allowedOrigins;
 
     @Override

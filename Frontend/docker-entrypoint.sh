@@ -3,10 +3,10 @@ set -eu
 
 cat > /app/dist/runtime-config.js <<EOF
 window.__env = {
-  apiCatalogUrl: "${API_CATALOG_URL:-https://campuslab.ddns.net/api/catalog/}",
-  apiBookingsUrl: "${API_BOOKINGS_URL:-https://campuslab.ddns.net/api/bookings/}",
-  apiReportUrl: "${API_REPORT_URL:-https://campuslab.ddns.net/api/report/}",
-  apiAuditUrl: "${API_AUDIT_URL:-https://campuslab.ddns.net/api/audit/}"
+  apiCatalogUrl: "${API_CATALOG_URL:-http://localhost:8081/api/catalog/}",
+  apiBookingsUrl: "${API_BOOKINGS_URL:-http://localhost:8082/api/bookings/}",
+  apiReportUrl: "${API_REPORT_URL:-http://localhost:8085/api/report/}",
+  apiAuditUrl: "${API_AUDIT_URL:-http://localhost:8083/api/audit/}"
 };
 EOF
 

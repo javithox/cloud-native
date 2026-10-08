@@ -26,20 +26,29 @@ import java.util.Set;
 @EnableMethodSecurity
 public class RoleSecurityConfig {
 
+    @Value("${APP_SECURITY_ENABLED:false}")
+    private boolean appSecurityEnabled;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
+            .csrf(csrf -> csrf.disable());
+
+        if (!appSecurityEnabled) {
+            http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            return http.build();
+        }
+
+        http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
 
-                .requestMatchers("/api/catalog/**").hasAnyRole("ADMIN", "TECNICO")
-                .requestMatchers("/api/bookings/**").hasAnyRole("ADMIN", "TECNICO", "ESTUDIANTE")
-                .requestMatchers("/api/report/**").hasRole("ADMIN")
-                .requestMatchers("/api/audit/**").hasAnyRole("ADMIN", "AUDITOR")
+                .requestMatchers("/api/catalog/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TECNICO", "SCOPE_archivos")
+                .requestMatchers("/api/bookings/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_TECNICO", "ROLE_ESTUDIANTE", "SCOPE_archivos")
+                .requestMatchers("/api/report/**").hasAnyAuthority("ROLE_ADMIN", "SCOPE_archivos")
+                .requestMatchers("/api/audit/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_AUDITOR", "SCOPE_archivos")
 
                 .anyRequest().authenticated()
             )
@@ -52,7 +61,7 @@ public class RoleSecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
-            @Value("${FRONTEND_ALLOWED_ORIGINS:http://localhost:4200,https://campuslab.ddns.net}") String allowedOrigins) {
+            @Value("${FRONTEND_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,https://campuslab.ddns.net}") String allowedOrigins) {
 
         CorsConfiguration config = new CorsConfiguration();
 
@@ -102,6 +111,16 @@ public class RoleSecurityConfig {
                 for (String group : groups) {
                     if (group != null && !group.isBlank()) {
                         authorities.add(new SimpleGrantedAuthority("ROLE_" + normalizeRole(group)));
+                    }
+                }
+            }
+
+            // Azure AD scope claim: "scp": "archivos"
+            String scope = jwt.getClaimAsString("scp");
+            if (scope != null && !scope.isBlank()) {
+                for (String scopeValue : scope.split(" ")) {
+                    if (!scopeValue.isBlank()) {
+                        authorities.add(new SimpleGrantedAuthority("SCOPE_" + scopeValue.trim()));
                     }
                 }
             }
