@@ -38,13 +38,19 @@ public class RoleSecurityConfig {
     @Value("${APP_SECURITY_ENABLED:false}")
     private boolean appSecurityEnabled;
 
+    @Value("${app.security.enabled:false}")
+    private boolean appSecurityEnabledAlt;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable());
 
-        if (!appSecurityEnabled) {
+        // Detectar si seguridad está deshabilitada (desarrollo local)
+        boolean securityDisabled = !appSecurityEnabled && !appSecurityEnabledAlt;
+        
+        if (securityDisabled) {
             http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
             return http.build();
         }

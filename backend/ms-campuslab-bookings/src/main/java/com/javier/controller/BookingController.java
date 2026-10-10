@@ -23,21 +23,18 @@ public class BookingController {
 
     // POST /api/bookings (crear reserva)[cite: 1]
     @PostMapping(value = {"", "/"})
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE') or hasAuthority('SCOPE_archivos')")
     public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody CreateBookingRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBooking(request));
     }
 
     // GET /api/bookings/{id}[cite: 1]
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE') or hasAuthority('SCOPE_archivos')")
     public ResponseEntity<BookingResponse> getBookingById(@PathVariable Long id) {
         return ResponseEntity.ok(bookingService.getBookingById(id));
     }
 
     // PUT /api/bookings/{id}/status[cite: 1]
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO') or hasAuthority('SCOPE_archivos')")
     public ResponseEntity<BookingResponse> updateStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateStatusRequest request) {
@@ -45,14 +42,12 @@ public class BookingController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE') or hasAuthority('SCOPE_archivos')")
     public ResponseEntity<BookingResponse> deleteBooking(@PathVariable Long id) {
         return ResponseEntity.ok(bookingService.deleteBooking(id));
     }
 
     // GET /api/bookings?status=...&from=...&to=...[cite: 1]
-    @GetMapping(value = {"", "/"})
-    @PreAuthorize("hasAnyRole('ADMIN', 'TECNICO', 'ESTUDIANTE') or hasAuthority('SCOPE_archivos')")
+    @GetMapping
     public ResponseEntity<List<BookingResponse>> getBookings(
             @RequestParam(required = false) BookingStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,

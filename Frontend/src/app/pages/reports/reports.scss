@@ -23,25 +23,161 @@ h1 {
   font-size: clamp(2rem, 3vw, 2.5rem);
 }
 
+h2 {
+  margin: 0 0 16px;
+  font-size: 1.25rem;
+  color: #1f2937;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #6b7280;
+}
+
+.error-message {
+  padding: 16px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #991b1b;
+  margin-bottom: 16px;
+}
+
+/* Métricas principales */
 .report-list {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
 }
 
 .report-item {
   background: white;
   border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 16px;
-  padding: 20px 18px;
+  border-left: 4px solid #3498db;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .icon {
+      font-size: 1.5rem;
+    }
+
+    .label {
+      color: #6b7280;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+  }
+
+  .value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+}
+
+/* Recursos más usados */
+.report-section {
+  background: white;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.resource-list {
+  display: grid;
+  gap: 16px;
+}
+
+.resource-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .resource-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .resource-name {
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .resource-count {
+      font-size: 0.875rem;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+  }
+
+  .progress-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+  }
+
+  .percentage {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: right;
+  }
+}
+
+/* Estados */
+.status-chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
 }
 
-span {
-  color: #475569;
+.status-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .status-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+  }
+
+  .status-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3b82f6;
+  }
 }
 
-strong {
-  font-size: 1.1rem;
-}

@@ -6,12 +6,64 @@
     </div>
   </header>
 
-  <div class="report-list">
-    @for (row of rows; track row.label) {
-      <article class="report-item">
-        <span>{{ row.label }}</span>
-        <strong>{{ row.value }}</strong>
-      </article>
+  @if (isLoading) {
+    <div class="loading">
+      <p>Cargando estadísticas...</p>
+    </div>
+  } @else {
+    @if (error) {
+      <div class="error-message">
+        <p>{{ error }}</p>
+      </div>
     }
-  </div>
+
+    <!-- Métricas Principales -->
+    <div class="report-list">
+      @for (row of rows; track row.label) {
+        <article class="report-item" [style.border-left-color]="row.color">
+          <div class="item-header">
+            <span class="icon">{{ row.icon }}</span>
+            <span class="label">{{ row.label }}</span>
+          </div>
+          <strong class="value">{{ row.value }}</strong>
+        </article>
+      }
+    </div>
+
+    <!-- Recursos Más Usados -->
+    @if (topResources.length > 0) {
+      <section class="report-section">
+        <h2>Recursos más usados</h2>
+        <div class="resource-list">
+          @for (resource of topResources; track resource.name) {
+            <article class="resource-item">
+              <div class="resource-header">
+                <span class="resource-name">{{ resource.name }}</span>
+                <span class="resource-count">{{ resource.count }} reservas</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="resource.percentage"></div>
+              </div>
+              <span class="percentage">{{ resource.percentage }}%</span>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Estados de Reservas -->
+    @if (bookingStatusChart.length > 0) {
+      <section class="report-section">
+        <h2>Distribución por estados</h2>
+        <div class="status-chart">
+          @for (status of bookingStatusChart; track status.status) {
+            <div class="status-item">
+              <span class="status-label">{{ status.status }}</span>
+              <span class="status-count">{{ status.count }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  }
 </section>

@@ -10,6 +10,12 @@
     </div>
   </header>
 
+  @if (error) { 
+    <div class="error-banner">
+      <p>{{ error }}</p>
+    </div>
+  }
+
   <div class="table-card">
     <table>
       <thead>
@@ -18,29 +24,58 @@
           <th>Recurso</th>
           <th>Horario</th>
           <th>Estado</th>
-          <th>Acción</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         @for (booking of bookings; track booking.id) {
-          <tr>
+          <tr [class.status-pending]="booking.status === 'PENDING'" 
+              [class.status-confirmed]="booking.status === 'CONFIRMED'"
+              [class.status-cancelled]="booking.status === 'CANCELLED'"
+              [class.status-completed]="booking.status === 'COMPLETED'">
             <td>{{ booking.id }}</td>
             <td>{{ booking.resourceName }}</td>
             <td>{{ booking.startTime | date:'short' }} - {{ booking.endTime | date:'shortTime' }}</td>
-            <td><span class="status">{{ booking.status }}</span></td>
+            <td>
+              <span class="status-badge" [class.pending]="booking.status === 'PENDING'"
+                                          [class.confirmed]="booking.status === 'CONFIRMED'"
+                                          [class.cancelled]="booking.status === 'CANCELLED'"
+                                          [class.completed]="booking.status === 'COMPLETED'">
+                {{ booking.status }}
+              </span>
+            </td>
             <td>
               <div class="row-actions">
-                @if (canAdvanceStatus()) {
-                  <button type="button" (click)="advance(booking)">Avanzar</button>
+                <!-- Botón Aceptar: solo para Admin/Técnico y si está PENDING -->
+                @if (canAcceptBooking() && (booking.status === 'PENDING' || booking.status === 'SOLICITADA')) {
+                  <button type="button" class="accept-button" (click)="acceptBooking(booking)" title="Aceptar esta reserva">
+                    ✓ Aceptar
+                  </button>
                 }
-                <button type="button" class="danger-button" (click)="deleteBooking(booking)">Eliminar</button>
+                
+                <!-- Botón Cancelar: para Admin/Técnico/Estudiante y si NO está COMPLETED o CANCELLED -->
+                @if (canCancelBooking() && booking.status !== 'COMPLETED' && booking.status !== 'CANCELLED') {
+                  <button type="button" class="cancel-button" (click)="cancelBooking(booking)" title="Cancelar esta reserva">
+                    ✗ Cancelar
+                  </button>
+                }
               </div>
             </td>
           </tr>
         }
       </tbody>
     </table>
-    @if (loading) { <p>Cargando reservas…</p> }
-    @if (error) { <p class="error">{{ error }}</p> }
+    
+    @if (loading) { 
+      <div class="loading-state">
+        <p>Cargando reservas…</p>
+      </div>
+    }
+    
+    @if (!loading && bookings.length === 0) {
+      <div class="empty-state">
+        <p>No hay reservas disponibles</p>
+      </div>
+    }
   </div>
 </section>

@@ -126,6 +126,28 @@ export class AuthService implements OnDestroy {
   }
 
   /**
+   * Obtiene el ID del usuario desde la cuenta activa.
+   */
+  getUserId(): string | null {
+    const activeAccount = this.getActiveAccount();
+    if (!activeAccount) {
+      return null;
+    }
+
+    // Intentar obtener del claim 'oid' (Object ID) o 'sub' (Subject)
+    const idTokenClaims = activeAccount.idTokenClaims as Record<string, unknown> | undefined;
+    if (idTokenClaims) {
+      return (idTokenClaims['oid'] as string) ?? 
+             (idTokenClaims['sub'] as string) ?? 
+             (idTokenClaims['email'] as string) ??
+             activeAccount.localAccountId;
+    }
+
+    // Fallback a localAccountId o username
+    return activeAccount.localAccountId || activeAccount.username || null;
+  }
+
+  /**
    * Obtiene el rol desde los claims del token.
    */
   getRoleFromClaims(): AppRole | null {

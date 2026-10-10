@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CampusLabApiService, Booking } from '../../services/campuslab-api.service';
@@ -7,7 +7,7 @@ import { CampusLabApiService, Booking } from '../../services/campuslab-api.servi
 @Component({
   selector: 'app-bookings-page',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, CommonModule],
   templateUrl: './bookings.html',
   styleUrl: './bookings.scss',
 })
@@ -23,31 +23,55 @@ export class BookingsPage implements OnInit {
     return this.authService.getRole() ?? 'Estudiante';
   }
 
-  canAdvanceStatus(): boolean {
+  canAcceptBooking(): boolean {
     return ['Admin', 'Técnico'].includes(this.currentRole);
   }
 
-  ngOnInit(): void { this.reload(); }
+  canCancelBooking(): boolean {
+    return ['Admin', 'Técnico', 'Estudiante'].includes(this.currentRole);
+  }
+
+  ngOnInit(): void { 
+    this.reload(); 
+  }
 
   reload(): void {
     this.loading = true;
     this.api.bookings().subscribe({
-      next: (bookings) => { this.bookings = bookings; this.loading = false; },
-      error: () => { this.error = 'No fue posible cargar las reservas.'; this.loading = false; },
+      next: (bookings) => { 
+        this.bookings = bookings; 
+        this.loading = false; 
+      },
+      error: () => { 
+        this.error = 'No fue posible cargar las reservas.'; 
+        this.loading = false; 
+      },
     });
   }
 
-  advance(booking: Booking): void {
-    const next: Record<string, string> = {
-      SOLICITADA: 'APROBADA', APROBADA: 'EN_PREPARACION',
-      EN_PREPARACION: 'EN_USO', EN_USO: 'DEVUELTA',
-    };
-    const status = next[booking.status];
-    if (status) this.api.updateBookingStatus(booking.id, status).subscribe({ next: () => this.reload() });
+  /**
+   * Aceptar reserva - cambiar estado a CONFIRMED
+   */
+  acceptBooking(booking: Booking): void {
+    if (booking.status === 'PENDING' || booking.status === 'SOLICITADA') {
+      this.api.updateBookingStatus(booking.id, 'CONFIRMED').subscribe({ 
+        next: () => this.reload(),
+        error: (err) => this.error = 'Error al aceptar la reserva.'
+      });
+    }
   }
 
-  deleteBooking(booking: Booking): void {
-    this.api.deleteBooking(booking.id).subscribe({ next: () => this.reload() });
+  /**
+   * Cancelar reserva - cambiar estado a CANCELLED
+   */
+  cancelBooking(booking: Booking): void {
+    const confirmed = confirm('¿Estás seguro de que deseas cancelar esta reserva?');
+    if (confirmed) {
+      this.api.updateBookingStatus(booking.id, 'CANCELLED').subscribe({ 
+        next: () => this.reload(),
+        error: (err) => this.error = 'Error al cancelar la reserva.'
+      });
+    }
   }
 
   goToCreateBooking(): void {

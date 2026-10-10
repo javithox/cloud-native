@@ -4,35 +4,80 @@
       <p class="eyebrow">Dashboard</p>
       <h1>Resumen para {{ roleDefinition.label }}</h1>
     </div>
+    <!-- Selector de rol solo para Admin -->
+    @if (isAdmin) {
+      <div class="role-selector">
+        <label for="role-select">Cambiar rol:</label>
+        <select id="role-select" [(ngModel)]="selectedRole" (change)="onRoleChange()" class="role-select">
+          @for (role of availableRoles; track role.value) {
+            <option [value]="role.value">{{ role.label }}</option>
+          }
+        </select>
+      </div>
+    }
   </header>
 
-  <div class="role-summary">
-    <p>{{ roleDefinition.description }}</p>
-    <ul class="capabilities-list">
-      @for (capability of capabilities(); track capability) {
-        <li>{{ capability }}</li>
+  <!-- Descripción y capabilidades -->
+  <section class="role-summary">
+    <div class="summary-content">
+      <div class="summary-text">
+        <p class="description">{{ roleDefinition.description }}</p>
+      </div>
+      <div class="capabilities">
+        <h3>Capacidades</h3>
+        <ul class="capabilities-list">
+          @for (capability of capabilities(); track capability) {
+            <li>✓ {{ capability }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Métricas -->
+  <section class="metrics-section">
+    <h2>Indicadores clave</h2>
+
+    @if (isLoadingMetrics) {
+      <div class="loading">
+        <p>Cargando métricas...</p>
+      </div>
+    } @else {
+      @if (metricsError) {
+        <div class="error-message">
+          <p>{{ metricsError }}</p>
+        </div>
       }
-    </ul>
-  </div>
 
-  <div class="stats-grid">
-    @for (metric of metrics(); track metric.label) {
-      <article class="stat-card">
-        <span>{{ metric.label }}</span>
-        <strong>{{ metric.value }}</strong>
-      </article>
+      <div class="stats-grid">
+        @for (metric of metrics; track metric.label) {
+          <article class="stat-card">
+            <div class="card-header">
+              @if (metric.icon) {
+                <span class="icon">{{ metric.icon }}</span>
+              }
+              <span class="label">{{ metric.label }}</span>
+            </div>
+            <strong class="value">{{ metric.value }}</strong>
+            @if (metric.unit) {
+              <span class="unit">{{ metric.unit }}</span>
+            }
+          </article>
+        }
+      </div>
     }
-  </div>
+  </section>
 
-  <div class="action-panel">
-    <h2>Acciones habilitadas</h2>
+  <!-- Acciones habilitadas -->
+  <section class="action-panel">
+    <h2>Acciones habilitadas para {{ roleDefinition.label }}</h2>
     <div class="action-grid">
       @for (action of actions(); track action.label) {
         <article class="action-card">
-          <strong>{{ action.label }}</strong>
-          <p>{{ action.description }}</p>
+          <strong class="action-title">{{ action.label }}</strong>
+          <p class="action-description">{{ action.description }}</p>
         </article>
       }
     </div>
-  </div>
+  </section>
 </section>
