@@ -21,7 +21,7 @@ describe('CampusLabApiService booking endpoints', () => {
   it('lists bookings using the Spring mapping without a trailing slash', () => {
     service.bookings().subscribe((bookings) => expect(bookings).toEqual([]));
 
-    const request = httpMock.expectOne('http://localhost:8082/api/bookings');
+    const request = httpMock.expectOne('http://localhost:8090/api/bookings');
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });
@@ -37,7 +37,7 @@ describe('CampusLabApiService booking endpoints', () => {
 
     service.createBooking(payload).subscribe();
 
-    const request = httpMock.expectOne('http://localhost:8082/api/bookings');
+    const request = httpMock.expectOne('http://localhost:8090/api/bookings');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(payload);
     request.flush({});

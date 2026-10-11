@@ -1,0 +1,31 @@
+server:
+  port: ${SERVER_PORT:8090}
+  forward-headers-strategy: framework
+spring:
+  application:
+    name: ms-campuslab-bff
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/${TENANT_ID:00000000-0000-0000-0000-000000000000}/v2.0}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+campuslab:
+  security:
+    jwt:
+      audience: ${JWT_AUDIENCE:api://00000000-0000-0000-0000-000000000000}
+  services:
+    bookings: ${BOOKINGS_BASE_URL:http://ms-campuslab-bookings:8082}
+    catalog: ${CATALOG_BASE_URL:http://ms-campuslab-catalog:8081}
+    audit: ${AUDIT_BASE_URL:http://ms-campuslab-audit:8083}
+    report: ${REPORT_BASE_URL:http://ms-campuslab-report:8085}
+    rabbitmq-admin: ${RABBITMQ_ADMIN_BASE_URL:http://ms-campuslab-rabbitmq-admin:8086}
+    kafka-admin: ${KAFKA_ADMIN_BASE_URL:http://ms-campuslab-kafka-admin:8087}

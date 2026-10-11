@@ -1,0 +1,24 @@
+server:
+  port: ${SERVER_PORT:8086}
+spring:
+  application:
+    name: ms-campuslab-rabbitmq-admin
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/${TENANT_ID:00000000-0000-0000-0000-000000000000}/v2.0}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+campuslab:
+  security:
+    jwt:
+      audience: ${JWT_AUDIENCE:api://00000000-0000-0000-0000-000000000000}

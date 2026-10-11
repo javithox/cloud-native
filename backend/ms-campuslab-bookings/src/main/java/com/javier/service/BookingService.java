@@ -30,10 +30,10 @@ public class BookingService {
     private final ObjectMapper objectMapper;
 
     // Añadimos valores por defecto después de los dos puntos (: valor)
-    @Value("${campuslab.rabbitmq.exchanges.direct:booking.direct.exchange}")
+    @Value("${campuslab.rabbitmq.exchanges.direct:cmd.direct}")
     private String directExchange;
 
-    @Value("${campuslab.kafka.topics.booking-events:booking-events-topic}")
+    @Value("${campuslab.kafka.topics.booking-events:bookings.events}")
     private String bookingEventsTopic;
 
     @Transactional

@@ -1,0 +1,60 @@
+name: campuslab-mq
+
+networks:
+  campuslab-net:
+    external: true
+    name: campuslab-net
+
+volumes:
+  rabbitmq1_data:
+  rabbitmq2_data:
+
+x-rabbitmq-common: &rabbitmq-common
+  image: rabbitmq:3-management
+  restart: unless-stopped
+  environment:
+    RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER en .env}
+    RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
+    RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:?Generate a private shared cookie in .env}
+  volumes:
+    - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+  healthcheck:
+    test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+    interval: 10s
+    timeout: 5s
+    retries: 15
+  networks: [campuslab-net]
+
+services:
+  rabbitmq-1:
+    <<: *rabbitmq-common
+    hostname: rabbitmq-1
+    container_name: campuslab-rabbitmq-1
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER en .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:?Generate a private shared cookie in .env}
+      RABBITMQ_NODENAME: rabbit@rabbitmq-1
+    ports:
+      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - rabbitmq1_data:/var/lib/rabbitmq
+    networks:
+      campuslab-net:
+        aliases: [rabbitmq]
+
+  rabbitmq-2:
+    <<: *rabbitmq-common
+    hostname: rabbitmq-2
+    container_name: campuslab-rabbitmq-2
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Define RABBITMQ_USER en .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:?Generate a private shared cookie in .env}
+      RABBITMQ_NODENAME: rabbit@rabbitmq-2
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - rabbitmq2_data:/var/lib/rabbitmq
+    networks: [campuslab-net]

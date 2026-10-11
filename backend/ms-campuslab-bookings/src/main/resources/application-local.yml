@@ -31,24 +31,24 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: https://login.microsoftonline.com/${TENANT_ID:bda559f7-26d8-4062-88a2-da66f2286b5f}/discovery/keys
+          issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/${TENANT_ID:00000000-0000-0000-0000-000000000000}/v2.0}
 
 campuslab:
   catalog:
     base-url: ${CATALOG_BASE_URL:http://localhost:8081}
   rabbitmq:
     exchanges:
-      direct: booking.direct.exchange
-      topic: booking.topic.exchange
-      dlx: booking.dlx.exchange
+      direct: cmd.direct
+      topic: cmd.topic
+      dlx: cmd.dead.dlx
   kafka:
     topics:
-      booking-events: booking-events-topic
+      booking-events: bookings.events
   security:
     jwt:
-      audience: ${JWT_AUDIENCE:api://e03479f6-d22d-4624-aa81-6e724d570329}
+      audience: ${JWT_AUDIENCE:api://00000000-0000-0000-0000-000000000000}
 
-# Seguridad DESHABILITADA para desarrollo local
+# Seguridad habilitada también en perfil local; usar APP_SECURITY_ENABLED=false solo en un entorno aislado.
 app:
   security:
-    enabled: false
+    enabled: true

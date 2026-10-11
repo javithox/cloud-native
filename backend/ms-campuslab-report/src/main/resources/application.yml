@@ -28,4 +28,4 @@ spring:
 campuslab:
   kafka:
     topics:
-      booking-events: booking-events-topic
+      booking-events: bookings.events

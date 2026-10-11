@@ -14,14 +14,9 @@ public class KafkaReportConsumer {
 
     private final ReportService reportService;
 
-    @KafkaListener(topics = "${campuslab.kafka.topics.booking-events:booking-events-topic}", groupId = "campuslab-report-group")
+    @KafkaListener(topics = "${campuslab.kafka.topics.booking-events:bookings.events}", groupId = "campuslab-report-group")
     public void onBookingEvent(ConsumerRecord<String, String> record) {
-        try {
-            String payload = record.value();
-            reportService.consumeBookingEvent(payload);
-            log.info("Evento agregado para reportería: {}", payload);
-        } catch (Exception e) {
-            log.error("Error consumiendo evento de Kafka para reportes: {}", record.value(), e);
-        }
+        reportService.consumeBookingEvent(record.value());
+        log.info("Evento agregado para reportería: {}", record.value());
     }
 }

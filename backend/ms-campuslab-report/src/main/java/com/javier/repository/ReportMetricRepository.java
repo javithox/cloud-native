@@ -6,12 +6,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.time.Instant;
 
 @Repository
 public interface ReportMetricRepository extends JpaRepository<ReportMetric, Long> {
 
     @Query("SELECT m FROM ReportMetric m WHERE m.metricName = :metricName ORDER BY m.capturedAt DESC")
     List<ReportMetric> findLatestByMetricName(String metricName);
+
+    List<ReportMetric> findByMetricNameAndCapturedAtAfterOrderByCapturedAtDesc(String metricName, Instant capturedAt);
+
+    List<ReportMetric> findByMetricNameOrderByCapturedAtDesc(String metricName);
 
     @Query("SELECT m FROM ReportMetric m WHERE m.dimension = :dimension ORDER BY m.capturedAt DESC")
     List<ReportMetric> findByDimensionOrderByCapturedAtDesc(String dimension);

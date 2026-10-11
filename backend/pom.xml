@@ -27,6 +27,9 @@
 		<module>ms-campuslab-catalog</module>
 		<module>ms-campuslab-audit</module>
 		<module>ms-campuslab-report</module>
+		<module>ms-campuslab-bff</module>
+		<module>ms-campuslab-rabbitmq-admin</module>
+		<module>ms-campuslab-kafka-admin</module>
 	</modules>
 	<scm>
 		<connection/>

@@ -51,21 +51,8 @@ environment:
 
 ## 🗄️ Configuración de Base de Datos
 
-### Usar Oracle en lugar de PostgreSQL
-Edita `backend/application-docker.yml`:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:oracle:thin:@oracle-host:1521:ORCL
-    driver-class-name: oracle.jdbc.driver.OracleDriver
-    username: system
-    password: oracle
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.OracleDialect
-```
+### Base de datos del proyecto
+Esta entrega se mantiene en PostgreSQL para todos los servicios con persistencia. No cambies el driver, URL ni dialecto a Oracle; configura `POSTGRES_DB`, `POSTGRES_USER` y `POSTGRES_PASSWORD` en `.env`.
 
 ### Conexión desde Host
 ```bash

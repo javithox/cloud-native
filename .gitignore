@@ -1,18 +1,19 @@
 # Secretos y configuración local
-**/.env
-**/.env.*
-!**/.env.example
+.env
+.env.*
+!.env.example
 **/envbackup
 
-# Datos locales de desarrollo y bases embebidas
+# Datos locales y bases embebidas
 **/data/*.mv.db
 **/data/*.trace.db
 
-# Dependencias y artefactos generados
-node_modules/
-Frontend/dist/
-Frontend/.angular/
-backend/target/
+# Dependencias y artefactos
+**/node_modules/
+**/dist/
+**/.angular/
 **/target/
+*.class
 *.log
 .DS_Store
+Thumbs.db

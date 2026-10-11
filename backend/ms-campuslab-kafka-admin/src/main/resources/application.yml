@@ -1,0 +1,27 @@
+server:
+  port: ${SERVER_PORT:8087}
+spring:
+  application:
+    name: ms-campuslab-kafka-admin
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    admin:
+      properties:
+        request.timeout.ms: 10000
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/${TENANT_ID:00000000-0000-0000-0000-000000000000}/v2.0}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+campuslab:
+  security:
+    jwt:
+      audience: ${JWT_AUDIENCE:api://00000000-0000-0000-0000-000000000000}
+  kafka:
+    topic-replication-factor: ${KAFKA_TOPIC_REPLICATION_FACTOR:3}
+    topic-partitions: ${KAFKA_TOPIC_PARTITIONS:3}

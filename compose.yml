@@ -1,3 +1,4 @@
+name: campuslab-local
 
 networks:
   campuslab-net:
@@ -10,227 +11,244 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-campuslab}
       POSTGRES_USER: ${POSTGRES_USER:-campuslab}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copia .env.example a .env y define POSTGRES_PASSWORD}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - ./docker/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql
+      - ./docker/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql:ro
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
-      retries: 5
-    networks:
-      - campuslab-net
+      retries: 10
+    networks: [campuslab-net]
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: campuslab-rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-campuslab}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
     ports:
-      - "${RABBITMQ_PORT:-5672}:5672"
-      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
-    networks:
-      - campuslab-net
+      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [campuslab-net]
+
   kafka:
     image: apache/kafka:3.9.0
     container_name: campuslab-kafka
-    ports:
-      - "${KAFKA_PORT:-9092}:9092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-
       KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://campuslab-kafka:9092
-
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@campuslab-kafka:9093
-
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_NUM_PARTITIONS: 1
-
-    networks:
-      - campuslab-net
+      KAFKA_NUM_PARTITIONS: 3
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server kafka:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+    networks: [campuslab-net]
 
   ms-campuslab-catalog:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        MODULE_NAME: ms-campuslab-catalog
-    container_name: ms-campuslab-catalog
-    ports:
-      - "${CATALOG_PORT:-8081}:8081"
+      args: { MODULE_NAME: ms-campuslab-catalog }
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      APP_SECURITY_ENABLED: ${APP_SECURITY_ENABLED:-false}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_catalog
       DB_USERNAME: ${POSTGRES_USER:-campuslab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_USER: ${RABBITMQ_USER:-campuslab}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
     depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
-      kafka:
-        condition: service_started
-    networks:
-      - campuslab-net
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [campuslab-net]
 
   ms-campuslab-bookings:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        MODULE_NAME: ms-campuslab-bookings
-    container_name: ms-campuslab-bookings
-    ports:
-      - "${BOOKINGS_PORT:-8082}:8082"
+      args: { MODULE_NAME: ms-campuslab-bookings }
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      APP_SECURITY_ENABLED: ${APP_SECURITY_ENABLED:-false}
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      CAMPUSLAB_CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
+      APP_SECURITY_ENABLED: ${APP_SECURITY_ENABLED:-true}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_bookings
       DB_USERNAME: ${POSTGRES_USER:-campuslab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
-      TENANT_ID: ${TENANT_ID:-bda559f7-26d8-4062-88a2-da66f2286b5f}
-      JWT_AUDIENCE: ${JWT_AUDIENCE:-api://e03479f6-d22d-4624-aa81-6e724d570329}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+      TENANT_ID: ${TENANT_ID:?Define TENANT_ID en .env}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?Define JWT_AUDIENCE en .env}
+      JWT_ISSUER_URI: ${JWT_ISSUER_URI:?Define JWT_ISSUER_URI en .env}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_USER: ${RABBITMQ_USER:-campuslab}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
+      CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
     depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
-      kafka:
-        condition: service_started
-    networks:
-      - campuslab-net
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+      ms-campuslab-catalog: { condition: service_started }
+    networks: [campuslab-net]
 
   ms-campuslab-audit:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        MODULE_NAME: ms-campuslab-audit
-    container_name: ms-campuslab-audit
-    ports:
-      - "${AUDIT_PORT:-8083}:8083"
+      args: { MODULE_NAME: ms-campuslab-audit }
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      APP_SECURITY_ENABLED: ${APP_SECURITY_ENABLED:-false}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_audit
       DB_USERNAME: ${POSTGRES_USER:-campuslab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
     depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
-      kafka:
-        condition: service_started
-    networks:
-      - campuslab-net
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [campuslab-net]
 
   ms-campuslab-report:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        MODULE_NAME: ms-campuslab-report
-    container_name: ms-campuslab-report
-    ports:
-      - "${REPORT_PORT:-8085}:8085"
+      args: { MODULE_NAME: ms-campuslab-report }
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      APP_SECURITY_ENABLED: ${APP_SECURITY_ENABLED:-false}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: campuslab_report
       DB_USERNAME: ${POSTGRES_USER:-campuslab}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-campuslab}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
-      kafka:
-        condition: service_started
-    networks:
-      - campuslab-net
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+    networks: [campuslab-net]
 
   ms-campuslab-notify:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        MODULE_NAME: ms-campuslab-notify
-    container_name: ms-campuslab-notify
-    ports:
-      - "${NOTIFY_PORT:-8084}:8084"
+      args: { MODULE_NAME: ms-campuslab-notify }
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: 8084
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_USER: ${RABBITMQ_USER:-campuslab}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
     depends_on:
-      rabbitmq:
-        condition: service_started
-    networks:
-      - campuslab-net
+      rabbitmq: { condition: service_healthy }
+    networks: [campuslab-net]
+
+  ms-campuslab-bff:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args: { MODULE_NAME: ms-campuslab-bff }
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8090
+      TENANT_ID: ${TENANT_ID:?Define TENANT_ID en .env}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?Define JWT_AUDIENCE en .env}
+      JWT_ISSUER_URI: ${JWT_ISSUER_URI:?Define JWT_ISSUER_URI en .env}
+      FRONTEND_ALLOWED_ORIGINS: ${FRONTEND_ALLOWED_ORIGINS:-http://localhost:4200,http://127.0.0.1:4200}
+      BOOKINGS_BASE_URL: http://ms-campuslab-bookings:8082
+      CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
+      AUDIT_BASE_URL: http://ms-campuslab-audit:8083
+      REPORT_BASE_URL: http://ms-campuslab-report:8085
+      RABBITMQ_ADMIN_BASE_URL: http://ms-campuslab-rabbitmq-admin:8086
+      KAFKA_ADMIN_BASE_URL: http://ms-campuslab-kafka-admin:8087
+    ports:
+      - "127.0.0.1:${BFF_PORT:-8090}:8090"
+    depends_on:
+      - ms-campuslab-bookings
+      - ms-campuslab-catalog
+      - ms-campuslab-audit
+      - ms-campuslab-report
+      - ms-campuslab-rabbitmq-admin
+      - ms-campuslab-kafka-admin
+    networks: [campuslab-net]
+
+  ms-campuslab-rabbitmq-admin:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args: { MODULE_NAME: ms-campuslab-rabbitmq-admin }
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8086
+      TENANT_ID: ${TENANT_ID:?Define TENANT_ID en .env}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?Define JWT_AUDIENCE en .env}
+      JWT_ISSUER_URI: ${JWT_ISSUER_URI:?Define JWT_ISSUER_URI en .env}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-campuslab}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+    networks: [campuslab-net]
+
+  ms-campuslab-kafka-admin:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args: { MODULE_NAME: ms-campuslab-kafka-admin }
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8087
+      TENANT_ID: ${TENANT_ID:?Define TENANT_ID en .env}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?Define JWT_AUDIENCE en .env}
+      JWT_ISSUER_URI: ${JWT_ISSUER_URI:?Define JWT_ISSUER_URI en .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC_REPLICATION_FACTOR: ${KAFKA_TOPIC_REPLICATION_FACTOR:-1}
+      KAFKA_TOPIC_PARTITIONS: ${KAFKA_TOPIC_PARTITIONS:-3}
+    depends_on:
+      kafka: { condition: service_healthy }
+    networks: [campuslab-net]
 
   frontend:
     build:
       context: ./Frontend
       dockerfile: Dockerfile
-    container_name: campuslab-frontend
     ports:
-      - "${FRONTEND_PORT:-4200}:4200"
+      - "127.0.0.1:${FRONTEND_PORT:-4200}:4200"
     environment:
-      API_CATALOG_URL: ${API_CATALOG_URL:-http://localhost:8081/api/catalog/}
-      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://localhost:8082/api/bookings/}
-      API_AUDIT_URL: ${API_AUDIT_URL:-http://localhost:8083/api/audit/}
-      API_REPORT_URL: ${API_REPORT_URL:-http://localhost:8085/api/report/}
+      API_CATALOG_URL: ${API_CATALOG_URL:-http://localhost:8090/api/catalog/}
+      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://localhost:8090/api/bookings/}
+      API_AUDIT_URL: ${API_AUDIT_URL:-http://localhost:8090/api/audit/}
+      API_REPORT_URL: ${API_REPORT_URL:-http://localhost:8090/api/report/}
     depends_on:
-      - ms-campuslab-catalog
-      - ms-campuslab-bookings
-      - ms-campuslab-audit
-      - ms-campuslab-report
-      - ms-campuslab-notify
-    networks:
-      - campuslab-net
+      - ms-campuslab-bff
+    networks: [campuslab-net]
 
 volumes:
   postgres_data:

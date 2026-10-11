@@ -19,13 +19,13 @@ export const environment = {
   apiAuditUrl: runtime.apiAuditUrl || `${origin}/api/audit/`,
 
   azure: {
-    clientId: 'e03479f6-d22d-4624-aa81-6e724d570329',
-    tenantId: 'bda559f7-26d8-4062-88a2-da66f2286b5f',
-    authority: 'https://login.microsoftonline.com/bda559f7-26d8-4062-88a2-da66f2286b5f',
+    clientId: '00000000-0000-0000-0000-000000000000',
+    tenantId: '00000000-0000-0000-0000-000000000000',
+    authority: 'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000',
     redirectUri: globalThis.location?.origin ?? 'https://campuslab.ddns.net',
     postLogoutRedirectUri: globalThis.location?.origin ?? 'https://campuslab.ddns.net',
     protectedResourceScopes: [
-      'api://e03479f6-d22d-4624-aa81-6e724d570329/archivos'
+      'api://00000000-0000-0000-0000-000000000000/archivos'
     ],
   },
 };

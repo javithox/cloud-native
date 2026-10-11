@@ -17,8 +17,20 @@ public class ReportController {
     private final ReportService reportService;
 
     @GetMapping("/kpis")
-    public ResponseEntity<Map<String, Double>> getKpis() {
-        return ResponseEntity.ok(reportService.getKpis());
+    public ResponseEntity<Map<String, Double>> getKpis(@RequestParam(defaultValue = "last24h") String range) {
+        return ResponseEntity.ok(reportService.getKpis(range));
+    }
+
+    @GetMapping("/reservations-per-hour")
+    public ResponseEntity<List<Map<String, Object>>> getReservationsPerHour(
+            @RequestParam(defaultValue = "last24h") String range) {
+        return ResponseEntity.ok(reportService.getReservationsPerHour(range));
+    }
+
+    @GetMapping("/top-resources")
+    public ResponseEntity<List<Map<String, Object>>> getTopResources(
+            @RequestParam(defaultValue = "last7d") String range) {
+        return ResponseEntity.ok(reportService.getTopResources(range));
     }
 
     @GetMapping("/metrics/{dimension}")

@@ -20,6 +20,8 @@ public class RabbitMQConfig {
     public Queue emailQueue() {
         return QueueBuilder
                 .durable("q.cmd.email")
+                .withArgument("x-dead-letter-exchange", "cmd.dead.dlx")
+                .withArgument("x-dead-letter-routing-key", "q.cmd.email")
                 .build();
     }
 
@@ -36,6 +38,8 @@ public class RabbitMQConfig {
     public Queue prepQueue() {
         return QueueBuilder
                 .durable("q.cmd.prep")
+                .withArgument("x-dead-letter-exchange", "cmd.dead.dlx")
+                .withArgument("x-dead-letter-routing-key", "q.cmd.prep")
                 .build();
     }
 
@@ -44,6 +48,18 @@ public class RabbitMQConfig {
     public Queue voucherQueue() {
         return QueueBuilder
                 .durable("q.cmd.voucher")
+                .withArgument("x-dead-letter-exchange", "cmd.dead.dlx")
+                .withArgument("x-dead-letter-routing-key", "q.cmd.voucher")
                 .build();
+    }
+
+    @Bean
+    public Queue prepDlq() {
+        return QueueBuilder.durable("q.cmd.prep.dlq").build();
+    }
+
+    @Bean
+    public Queue voucherDlq() {
+        return QueueBuilder.durable("q.cmd.voucher.dlq").build();
     }
 }

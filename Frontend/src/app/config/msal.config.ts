@@ -77,12 +77,18 @@ export function msalGuardConfigFactory(): MsalGuardConfiguration {
 
 export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap = new Map<string, Array<string> | null>();
+  const bffOrigin = new URL(
+    environment.apiBookingsUrl,
+    globalThis.location?.origin ?? 'http://localhost:4200'
+  ).origin;
 
   const protectedResources = [
     environment.apiCatalogUrl,
     environment.apiBookingsUrl,
     environment.apiReportUrl,
     environment.apiAuditUrl,
+    `${bffOrigin}/api/admin/rabbitmq/`,
+    `${bffOrigin}/api/admin/kafka/`,
   ];
 
   const scopes = [...environment.azure.protectedResourceScopes];

@@ -18,6 +18,9 @@ spring:
         format_sql: true
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       group-id: campuslab-audit-group
       auto-offset-reset: earliest
@@ -27,4 +30,5 @@ spring:
 campuslab:
   kafka:
     topics:
-      booking-events: booking-events-topic
+      booking-events: bookings.events
+      audit-timeline: audit.timeline

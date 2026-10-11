@@ -20,8 +20,16 @@ public class AuditService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
-    public AuditEvent saveAuditEvent(String eventType, String correlationId, String traceId, Long timestamp, String payload) {
+    public AuditEvent saveAuditEvent(String eventId, String eventType, String correlationId, String traceId, Long timestamp, String payload) {
+        if (eventId == null || eventId.isBlank()) {
+            throw new IllegalArgumentException("El evento de auditoría debe incluir eventId");
+        }
+        var existing = auditEventRepository.findByEventId(eventId);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
         AuditEvent event = AuditEvent.builder()
+                .eventId(eventId)
                 .eventType(eventType)
                 .correlationId(correlationId)
                 .traceId(traceId)
