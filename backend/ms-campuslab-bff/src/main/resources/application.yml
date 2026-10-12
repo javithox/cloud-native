@@ -8,7 +8,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/${TENANT_ID:00000000-0000-0000-0000-000000000000}/v2.0}
+          issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/${TENANT_ID:bda559f7-26d8-4062-88a2-da66f2286b5f}/v2.0}
 management:
   endpoints:
     web:
@@ -21,7 +21,7 @@ management:
 campuslab:
   security:
     jwt:
-      audience: ${JWT_AUDIENCE:api://00000000-0000-0000-0000-000000000000}
+      audience: ${JWT_AUDIENCE:api://e03479f6-d22d-4624-aa81-6e724d570329}
   services:
     bookings: ${BOOKINGS_BASE_URL:http://ms-campuslab-bookings:8082}
     catalog: ${CATALOG_BASE_URL:http://ms-campuslab-catalog:8081}
