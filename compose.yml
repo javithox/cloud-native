@@ -242,10 +242,10 @@ services:
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-4200}:4200"
     environment:
-      API_CATALOG_URL: ${API_CATALOG_URL:-http://localhost:8090/api/catalog/}
-      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-http://localhost:8090/api/bookings/}
-      API_AUDIT_URL: ${API_AUDIT_URL:-http://localhost:8090/api/audit/}
-      API_REPORT_URL: ${API_REPORT_URL:-http://localhost:8090/api/report/}
+      API_CATALOG_URL: ${API_CATALOG_URL:-/api/catalog/}
+      API_BOOKINGS_URL: ${API_BOOKINGS_URL:-/api/bookings/}
+      API_AUDIT_URL: ${API_AUDIT_URL:-/api/audit/}
+      API_REPORT_URL: ${API_REPORT_URL:-/api/report/}
     depends_on:
       - ms-campuslab-bff
     networks: [campuslab-net]
