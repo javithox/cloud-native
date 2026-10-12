@@ -52,28 +52,59 @@ export class BookingsPage implements OnInit {
   /**
    * Aceptar reserva - cambiar estado a CONFIRMED
    */
+
+  /**
+   * Aceptar una solicitud pendiente.
+   */
   acceptBooking(booking: Booking): void {
-    if (booking.status === 'PENDING' || booking.status === 'SOLICITADA') {
-      this.api.updateBookingStatus(booking.id, 'CONFIRMED').subscribe({ 
-        next: () => this.reload(),
-        error: (err) => this.error = 'Error al aceptar la reserva.'
-      });
+    if (booking.status !== 'SOLICITADA') {
+      this.error = 'Solo se pueden aceptar solicitudes pendientes.';
+      return;
     }
+
+    this.error = '';
+
+    this.api.updateBookingStatus(booking.id, 'APROBADA').subscribe({
+      next: () => this.reload(),
+      error: () => {
+        this.error = 'Error al aceptar la reserva.';
+      },
+    });
   }
 
   /**
-   * Cancelar reserva - cambiar estado a CANCELLED
+   * Cancelar una solicitud o reserva que permita esta transición.
    */
   cancelBooking(booking: Booking): void {
-    const confirmed = confirm('¿Estás seguro de que deseas cancelar esta reserva?');
-    if (confirmed) {
-      this.api.updateBookingStatus(booking.id, 'CANCELLED').subscribe({ 
-        next: () => this.reload(),
-        error: (err) => this.error = 'Error al cancelar la reserva.'
-      });
-    }
-  }
+    const cancellableStatuses = [
+      'SOLICITADA',
+      'APROBADA',
+      'EN_PREPARACION',
+    ];
 
+    if (!cancellableStatuses.includes(booking.status)) {
+      this.error = 'Esta reserva no se puede cancelar en su estado actual.';
+      return;
+    }
+
+    const confirmed = confirm(
+      '¿Estás seguro de que deseas cancelar esta reserva?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.error = '';
+
+    this.api.updateBookingStatus(booking.id, 'CANCELADA').subscribe({
+      next: () => this.reload(),
+      error: () => {
+        this.error = 'Error al cancelar la reserva.';
+      },
+    });
+  }
+  
   goToCreateBooking(): void {
     this.router.navigate(['/bookings/new']);
   }
