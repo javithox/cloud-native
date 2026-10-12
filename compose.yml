@@ -68,6 +68,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
       args: { MODULE_NAME: ms-campuslab-catalog }
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -91,6 +92,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
       args: { MODULE_NAME: ms-campuslab-bookings }
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -121,6 +123,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
       args: { MODULE_NAME: ms-campuslab-audit }
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -139,6 +142,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
       args: { MODULE_NAME: ms-campuslab-report }
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -157,6 +161,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
       args: { MODULE_NAME: ms-campuslab-notify }
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -173,6 +178,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
       args: { MODULE_NAME: ms-campuslab-bff }
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -202,6 +208,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
       args: { MODULE_NAME: ms-campuslab-rabbitmq-admin }
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -221,6 +228,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
       args: { MODULE_NAME: ms-campuslab-kafka-admin }
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -239,6 +247,7 @@ services:
     build:
       context: ./Frontend
       dockerfile: Dockerfile
+      network: host
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-4200}:4200"
     environment:

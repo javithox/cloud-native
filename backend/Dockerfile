@@ -11,9 +11,10 @@ COPY ms-campuslab-report/pom.xml ms-campuslab-report/
 COPY ms-campuslab-bff/pom.xml ms-campuslab-bff/
 COPY ms-campuslab-rabbitmq-admin/pom.xml ms-campuslab-rabbitmq-admin/
 COPY ms-campuslab-kafka-admin/pom.xml ms-campuslab-kafka-admin/
-RUN mvn -B -ntp dependency:go-offline
+RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp dependency:go-offline || true
 COPY . .
-RUN if [ -f application-docker.yml ]; then cp application-docker.yml "${MODULE_NAME}/src/main/resources/application-docker.yml"; fi \
+RUN --mount=type=cache,target=/root/.m2 \
+    if [ -f application-docker.yml ]; then cp application-docker.yml "${MODULE_NAME}/src/main/resources/application-docker.yml"; fi \
     && mvn -B -ntp clean package -pl "${MODULE_NAME}" -am -DskipTests
 RUN JAR="$(find "${MODULE_NAME}/target" -maxdepth 1 -type f -name '*.jar' ! -name '*.original' | head -n 1)" \
     && test -n "${JAR}" \
