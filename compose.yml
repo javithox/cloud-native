@@ -240,7 +240,7 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-4200}:4200"
+      - "${FRONTEND_PORT:-4200}:4200"
     environment:
       API_CATALOG_URL: ${API_CATALOG_URL:-/api/catalog/}
       API_BOOKINGS_URL: ${API_BOOKINGS_URL:-/api/bookings/}
