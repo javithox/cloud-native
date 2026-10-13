@@ -180,7 +180,7 @@ services:
       TENANT_ID: ${TENANT_ID:?Define TENANT_ID en .env}
       JWT_AUDIENCE: ${JWT_AUDIENCE:?Define JWT_AUDIENCE en .env}
       JWT_ISSUER_URI: ${JWT_ISSUER_URI:?Define JWT_ISSUER_URI en .env}
-      FRONTEND_ALLOWED_ORIGINS: ${FRONTEND_ALLOWED_ORIGINS:-http://localhost:4200,http://127.0.0.1:4200}
+      FRONTEND_ALLOWED_ORIGINS: ${FRONTEND_ALLOWED_ORIGINS:-http://localhost:4200,http://${EC2_PUBLIC_HOST}:4200}
       BOOKINGS_BASE_URL: http://ms-campuslab-bookings:8082
       CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
       AUDIT_BASE_URL: http://ms-campuslab-audit:8083
@@ -240,7 +240,7 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-4200}:4200"
+      - "${EC2_PUBLIC_HOST}:${FRONTEND_PORT:-4200}:4200"
     environment:
       API_CATALOG_URL: ${API_CATALOG_URL:-/api/catalog/}
       API_BOOKINGS_URL: ${API_BOOKINGS_URL:-/api/bookings/}

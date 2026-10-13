@@ -24,6 +24,6 @@ RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 EXPOSE 4200
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1:4200/ || exit 1
+  CMD wget -q -O /dev/null http://${EC2_PUBLIC_HOST}:4200/ || exit 1
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
