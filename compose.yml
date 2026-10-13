@@ -180,7 +180,7 @@ services:
       TENANT_ID: ${TENANT_ID:?Define TENANT_ID en .env}
       JWT_AUDIENCE: ${JWT_AUDIENCE:?Define JWT_AUDIENCE en .env}
       JWT_ISSUER_URI: ${JWT_ISSUER_URI:?Define JWT_ISSUER_URI en .env}
-      FRONTEND_ALLOWED_ORIGINS: ${FRONTEND_ALLOWED_ORIGINS:-http://localhost:4200,http://54.81.92.23:4200}
+      FRONTEND_ALLOWED_ORIGINS: ${FRONTEND_ALLOWED_ORIGINS:-http://localhost:4200,https://campuslab.ddns.net}
       BOOKINGS_BASE_URL: http://ms-campuslab-bookings:8082
       CATALOG_BASE_URL: http://ms-campuslab-catalog:8081
       AUDIT_BASE_URL: http://ms-campuslab-audit:8083
