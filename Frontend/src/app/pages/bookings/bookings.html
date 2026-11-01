@@ -78,4 +78,28 @@
       </div>
     }
   </div>
+
+  @if (confirmAction) {
+    <div class="confirm-overlay" (click)="closeConfirmModal()">
+      <div class="confirm-panel" (click)="$event.stopPropagation()">
+        <div class="confirm-header">
+          <h3>{{ confirmAction.type === 'approve' ? 'Confirmar aprobación' : 'Confirmar cancelación' }}</h3>
+          <button type="button" class="close-button" (click)="closeConfirmModal()">×</button>
+        </div>
+
+        <p>
+          ¿Deseas {{ confirmAction.type === 'approve' ? 'aprobar' : 'cancelar' }} la reserva
+          <strong>#{{ confirmAction.booking.id }}</strong>
+          para <strong>{{ confirmAction.booking.resourceName }}</strong>?
+        </p>
+
+        <div class="confirm-actions">
+          <button type="button" class="secondary-action" (click)="closeConfirmModal()">Volver</button>
+          <button type="button" class="primary-action" (click)="confirmBookingAction()">
+            {{ confirmAction.type === 'approve' ? 'Confirmar aprobación' : 'Confirmar cancelación' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </section>

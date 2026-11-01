@@ -20,6 +20,7 @@ export class BookingsPage implements OnInit {
   bookings: Booking[] = [];
   loading = true;
   error = '';
+  confirmAction: { type: 'approve' | 'cancel'; booking: Booking } | null = null;
 
   get currentRole() {
     return this.authService.getRole() ?? 'Estudiante';
@@ -65,16 +66,40 @@ export class BookingsPage implements OnInit {
       return;
     }
 
+    this.confirmAction = { type: 'approve', booking };
     this.error = '';
+  }
 
-    this.api.updateBookingStatus(booking.id, 'APROBADA').subscribe({
+  requestCancelBooking(booking: Booking): void {
+    const cancellableStatuses = ['SOLICITADA', 'APROBADA', 'EN_PREPARACION'];
+
+    if (!cancellableStatuses.includes(booking.status)) {
+      this.error = 'Esta reserva no se puede cancelar en su estado actual.';
+      return;
+    }
+
+    this.confirmAction = { type: 'cancel', booking };
+    this.error = '';
+  }
+
+  confirmBookingAction(): void {
+    if (!this.confirmAction) {
+      return;
+    }
+
+    const { type, booking } = this.confirmAction;
+    const nextStatus = type === 'approve' ? 'APROBADA' : 'CANCELADA';
+
+    this.api.updateBookingStatus(booking.id, nextStatus).subscribe({
       next: () => {
-        this.toastService.success('Reserva aprobada correctamente.');
+        this.toastService.success(type === 'approve' ? 'Reserva aprobada correctamente.' : 'Reserva cancelada correctamente.');
+        this.confirmAction = null;
         this.reload();
       },
       error: () => {
-        this.error = 'Error al aceptar la reserva.';
-        this.toastService.error('Error al aceptar la reserva.');
+        this.error = type === 'approve' ? 'Error al aceptar la reserva.' : 'Error al cancelar la reserva.';
+        this.toastService.error(type === 'approve' ? 'Error al aceptar la reserva.' : 'Error al cancelar la reserva.');
+        this.confirmAction = null;
       },
     });
   }
@@ -83,37 +108,11 @@ export class BookingsPage implements OnInit {
    * Cancelar una solicitud o reserva que permita esta transición.
    */
   cancelBooking(booking: Booking): void {
-    const cancellableStatuses = [
-      'SOLICITADA',
-      'APROBADA',
-      'EN_PREPARACION',
-    ];
+    this.requestCancelBooking(booking);
+  }
 
-    if (!cancellableStatuses.includes(booking.status)) {
-      this.error = 'Esta reserva no se puede cancelar en su estado actual.';
-      return;
-    }
-
-    const confirmed = confirm(
-      '¿Estás seguro de que deseas cancelar esta reserva?'
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    this.error = '';
-
-    this.api.updateBookingStatus(booking.id, 'CANCELADA').subscribe({
-      next: () => {
-        this.toastService.success('Reserva cancelada correctamente.');
-        this.reload();
-      },
-      error: () => {
-        this.error = 'Error al cancelar la reserva.';
-        this.toastService.error('Error al cancelar la reserva.');
-      },
-    });
+  closeConfirmModal(): void {
+    this.confirmAction = null;
   }
   
   goToCreateBooking(): void {
