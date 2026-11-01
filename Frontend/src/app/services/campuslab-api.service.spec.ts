@@ -48,6 +48,21 @@ describe('CampusLabApiService booking endpoints', () => {
     request.flush({});
   });
 
+  it('derives a student id automatically when the UI does not send one', () => {
+    service.createBooking({
+      studentEmail: 'alice@example.test',
+      resourceId: 3,
+      startTime: '2099-12-12T09:00:00',
+      endTime: '2099-12-12T10:00:00',
+    }).subscribe();
+
+    const request = httpMock.expectOne('http://localhost:8090/api/bookings');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body.studentId).toBe('alice');
+    expect(request.request.body.studentEmail).toBe('alice@example.test');
+    request.flush({});
+  });
+
   it('builds audit events from the audit timeline, including error entries', async () => {
     const promise = firstValueFrom(service.getAuditWithBookings());
 

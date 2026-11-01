@@ -20,10 +20,6 @@ import { CampusLabApiService } from '../../services/campuslab-api.service';
       <form class="form-card" (ngSubmit)="submit()">
         <div class="field-grid">
           <label>
-            <span>ID del estudiante</span>
-            <input [(ngModel)]="form.studentId" name="studentId" required />
-          </label>
-          <label>
             <span>Email del estudiante</span>
             <input [(ngModel)]="form.studentEmail" name="studentEmail" type="email" required />
           </label>
@@ -86,7 +82,6 @@ export class BookingFormPage implements OnInit {
   isSubmitting = false;
 
   form = {
-    studentId: '',
     studentEmail: '',
     resourceId: '',
     startTime: '',
@@ -107,8 +102,7 @@ export class BookingFormPage implements OnInit {
   }
 
   get isSubmitDisabled(): boolean {
-    return !this.form.studentId.trim() ||
-      !this.form.studentEmail.trim() ||
+    return !this.form.studentEmail.trim() ||
       !this.form.resourceId ||
       !this.form.startTime ||
       !this.form.endTime;
@@ -121,10 +115,10 @@ export class BookingFormPage implements OnInit {
     }
 
     this.isSubmitting = true;
+    const studentEmail = this.form.studentEmail.trim();
 
     this.api.createBooking({
-      studentId: this.form.studentId.trim(),
-      studentEmail: this.form.studentEmail.trim(),
+      studentEmail,
       resourceId: Number(this.form.resourceId),
       startTime: this.form.startTime,
       endTime: this.form.endTime,

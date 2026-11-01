@@ -69,14 +69,19 @@ export class CampusLabApiService {
   }
 
   createBooking(payload: {
-    studentId: string;
+    studentId?: string;
     studentEmail: string;
     resourceId: number;
     startTime: string;
     endTime: string;
     notes?: string;
   }): Observable<Booking> {
-    return this.http.post<Booking>(this.bookingsUrl, payload);
+    const normalizedPayload = {
+      ...payload,
+      studentId: (payload.studentId ?? payload.studentEmail?.split('@')[0] ?? `student-${Date.now()}`).trim() || `student-${Date.now()}`,
+    };
+
+    return this.http.post<Booking>(this.bookingsUrl, normalizedPayload);
   }
 
   deleteBooking(id: number): Observable<Booking> {
