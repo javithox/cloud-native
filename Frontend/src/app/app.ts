@@ -6,10 +6,12 @@ import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { AppRole } from './services/role-permissions';
 import { AuthService } from './services/auth.service';
+import { ToastContainerComponent } from './components/toast-container';
+import { ToastService } from './services/toast.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastContainerComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -28,7 +30,8 @@ export class App implements OnInit, OnDestroy {
   constructor(
     public authService: AuthService,
     private readonly msalService: MsalService,
-    private readonly msalBroadcastService: MsalBroadcastService
+    private readonly msalBroadcastService: MsalBroadcastService,
+    private readonly toastService: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +69,8 @@ export class App implements OnInit, OnDestroy {
 
   logout(): void {
     this.menuOpen = false;
+    this.toastService.info('Cerrando sesión...');
+    this.toastService.success('Sesión cerrada correctamente.');
     this.authService.logout();
   }
 

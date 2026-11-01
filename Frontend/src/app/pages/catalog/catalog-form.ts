@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CampusLabApiService } from '../../services/campuslab-api.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-catalog-form-page',
@@ -73,6 +74,7 @@ export class CatalogFormPage implements OnInit {
   private readonly api = inject(CampusLabApiService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly toastService = inject(ToastService);
 
   isEditMode = false;
   resourceId: number | null = null;
@@ -107,13 +109,13 @@ export class CatalogFormPage implements OnInit {
           totalStock: resource.totalStock,
         };
       },
-      error: () => alert('No se pudo cargar el recurso para editar.'),
+      error: () => this.toastService.error('No se pudo cargar el recurso para editar.'),
     });
   }
 
   submit(): void {
     if (this.isSubmitDisabled) {
-      alert('Completa los campos obligatorios del recurso antes de guardar.');
+      this.toastService.info('Completa los campos obligatorios del recurso antes de guardar.');
       return;
     }
 
@@ -131,10 +133,13 @@ export class CatalogFormPage implements OnInit {
       : this.api.createResource(payload);
 
     request$.subscribe({
-      next: () => this.router.navigate(['/catalog']),
+      next: () => {
+        this.toastService.success(this.isEditMode ? 'Recurso actualizado correctamente.' : 'Recurso creado correctamente.');
+        this.router.navigate(['/catalog']);
+      },
       error: () => {
         this.isSubmitting = false;
-        alert(this.isEditMode ? 'No se pudo actualizar el recurso.' : 'No se pudo crear el recurso.');
+        this.toastService.error(this.isEditMode ? 'No se pudo actualizar el recurso.' : 'No se pudo crear el recurso.');
       },
     });
   }

@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CampusLabApiService, Resource } from '../../services/campuslab-api.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-catalog-page',
@@ -11,6 +12,7 @@ import { CampusLabApiService, Resource } from '../../services/campuslab-api.serv
 export class CatalogPage implements OnInit {
   private readonly api = inject(CampusLabApiService);
   private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
   resources: Resource[] = [];
   error = '';
 
@@ -21,7 +23,10 @@ export class CatalogPage implements OnInit {
   reload(): void {
     this.api.resources().subscribe({
       next: (resources) => this.resources = resources,
-      error: () => this.error = 'No fue posible cargar el catálogo.',
+      error: () => {
+        this.error = 'No fue posible cargar el catálogo.';
+        this.toastService.error('No fue posible cargar el catálogo.');
+      },
     });
   }
 
@@ -30,7 +35,13 @@ export class CatalogPage implements OnInit {
   }
 
   deleteResource(resource: Resource): void {
-    this.api.deleteResource(resource.id).subscribe({ next: () => this.reload() });
+    this.api.deleteResource(resource.id).subscribe({
+      next: () => {
+        this.toastService.success(`Recurso "${resource.name}" eliminado correctamente.`);
+        this.reload();
+      },
+      error: () => this.toastService.error(`No se pudo eliminar el recurso "${resource.name}".`),
+    });
   }
 
   goToCreateResource(): void {

@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CampusLabApiService, Booking } from '../../services/campuslab-api.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-bookings-page',
@@ -15,6 +16,7 @@ export class BookingsPage implements OnInit {
   private readonly api = inject(CampusLabApiService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
   bookings: Booking[] = [];
   loading = true;
   error = '';
@@ -45,6 +47,7 @@ export class BookingsPage implements OnInit {
       error: () => { 
         this.error = 'No fue posible cargar las reservas.'; 
         this.loading = false; 
+        this.toastService.error('No fue posible cargar las reservas.');
       },
     });
   }
@@ -65,9 +68,13 @@ export class BookingsPage implements OnInit {
     this.error = '';
 
     this.api.updateBookingStatus(booking.id, 'APROBADA').subscribe({
-      next: () => this.reload(),
+      next: () => {
+        this.toastService.success('Reserva aprobada correctamente.');
+        this.reload();
+      },
       error: () => {
         this.error = 'Error al aceptar la reserva.';
+        this.toastService.error('Error al aceptar la reserva.');
       },
     });
   }
@@ -98,9 +105,13 @@ export class BookingsPage implements OnInit {
     this.error = '';
 
     this.api.updateBookingStatus(booking.id, 'CANCELADA').subscribe({
-      next: () => this.reload(),
+      next: () => {
+        this.toastService.success('Reserva cancelada correctamente.');
+        this.reload();
+      },
       error: () => {
         this.error = 'Error al cancelar la reserva.';
+        this.toastService.error('Error al cancelar la reserva.');
       },
     });
   }

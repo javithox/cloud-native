@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CampusLabApiService } from '../../services/campuslab-api.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-booking-form-page',
@@ -77,6 +78,7 @@ import { CampusLabApiService } from '../../services/campuslab-api.service';
 export class BookingFormPage implements OnInit {
   private readonly api = inject(CampusLabApiService);
   private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
   resources: Array<{ id: number; name: string; code: string }> = [];
   isSubmitting = false;
@@ -97,7 +99,7 @@ export class BookingFormPage implements OnInit {
           this.form.resourceId = String(this.resources[0].id);
         }
       },
-      error: () => alert('No se pudo cargar la lista de recursos disponibles.'),
+      error: () => this.toastService.error('No se pudo cargar la lista de recursos disponibles.'),
     });
   }
 
@@ -110,7 +112,7 @@ export class BookingFormPage implements OnInit {
 
   submit(): void {
     if (this.isSubmitDisabled) {
-      alert('Completa todos los campos obligatorios para registrar la reserva.');
+      this.toastService.info('Completa todos los campos obligatorios para registrar la reserva.');
       return;
     }
 
@@ -124,10 +126,13 @@ export class BookingFormPage implements OnInit {
       endTime: this.form.endTime,
       notes: this.form.notes.trim() || undefined,
     }).subscribe({
-      next: () => this.router.navigate(['/bookings']),
+      next: () => {
+        this.toastService.success('Reserva creada correctamente.');
+        this.router.navigate(['/bookings']);
+      },
       error: () => {
         this.isSubmitting = false;
-        alert('No se pudo crear la reserva. Revisa los datos o el recurso disponible.');
+        this.toastService.error('No se pudo crear la reserva. Revisa los datos o el recurso disponible.');
       },
     });
   }
