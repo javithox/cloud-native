@@ -6,6 +6,7 @@
     </div>
     <div class="header-actions">
       <button type="button" class="secondary-action" (click)="reload()">Actualizar</button>
+      <button type="button" class="secondary-action" (click)="goToCreateBooking()">+ Nueva reserva</button>
       <button type="button" class="primary-action" (click)="goToCreateResource()">+ Nuevo recurso</button>
     </div>
   </header>
@@ -26,6 +27,7 @@
           <p>{{ resource.description || 'Recurso académico' }}</p>
           <strong>{{ resource.availableStock }} / {{ resource.totalStock }} disponibles</strong>
           <div class="resource-actions">
+            <button type="button" class="primary-action" (click)="goToCreateBooking(resource)">Nueva reserva</button>
             <button type="button" class="secondary-action" (click)="editResource(resource)">Editar</button>
             <button type="button" class="danger-button" (click)="requestDeleteResource(resource)">Eliminar</button>
           </div>

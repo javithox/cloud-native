@@ -65,4 +65,13 @@ export class CatalogPage implements OnInit {
   goToCreateResource(): void {
     this.router.navigate(['/catalog/new']);
   }
+
+  goToCreateBooking(resource?: Resource): void {
+    if (resource) {
+      this.router.navigate(['/bookings/new'], { queryParams: { resourceId: resource.id } });
+      return;
+    }
+
+    this.router.navigate(['/bookings/new']);
+  }
 }

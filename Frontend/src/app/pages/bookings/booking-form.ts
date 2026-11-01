@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CampusLabApiService } from '../../services/campuslab-api.service';
 import { ToastService } from '../../services/toast.service';
 
@@ -101,6 +101,7 @@ import { ToastService } from '../../services/toast.service';
 export class BookingFormPage implements OnInit {
   private readonly api = inject(CampusLabApiService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly toastService = inject(ToastService);
 
   resources: Array<{ id: number; name: string; code: string }> = [];
@@ -116,10 +117,17 @@ export class BookingFormPage implements OnInit {
   };
 
   ngOnInit(): void {
+    const preferredResourceId = this.route.snapshot.queryParamMap.get('resourceId');
+    if (preferredResourceId) {
+      this.form.resourceId = preferredResourceId;
+    }
+
     this.api.resources().subscribe({
       next: (items) => {
         this.resources = items.filter((resource) => resource.active !== false);
-        if (this.resources.length > 0 && !this.form.resourceId) {
+
+        const hasSelectedResource = this.resources.some((resource) => String(resource.id) === this.form.resourceId);
+        if (this.resources.length > 0 && (!this.form.resourceId || !hasSelectedResource)) {
           this.form.resourceId = String(this.resources[0].id);
         }
       },
