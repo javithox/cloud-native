@@ -16,6 +16,7 @@ export class CatalogPage implements OnInit {
   resources: Resource[] = [];
   error = '';
   confirmDelete: Resource | null = null;
+  confirmCreateResource = false;
 
   ngOnInit(): void {
     this.reload();
@@ -62,16 +63,16 @@ export class CatalogPage implements OnInit {
     this.confirmDelete = null;
   }
 
-  goToCreateResource(): void {
-    this.router.navigate(['/catalog/new']);
+  requestCreateResource(): void {
+    this.confirmCreateResource = true;
   }
 
-  goToCreateBooking(resource?: Resource): void {
-    if (resource) {
-      this.router.navigate(['/bookings/new'], { queryParams: { resourceId: resource.id } });
-      return;
-    }
+  closeCreateResourceConfirm(): void {
+    this.confirmCreateResource = false;
+  }
 
-    this.router.navigate(['/bookings/new']);
+  goToCreateResource(): void {
+    this.confirmCreateResource = false;
+    this.router.navigate(['/catalog/new']);
   }
 }
