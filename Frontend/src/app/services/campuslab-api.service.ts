@@ -196,12 +196,14 @@ export class CampusLabApiService {
    */
   getAuditWithBookings(): Observable<AuditTimelineEvent[]> {
     return this.audit().pipe(
-      map((entries) => {
+      switchMap((entries) => {
         const parsed = entries
           .map((entry) => this.parseAuditEntry(entry))
           .filter((entry): entry is AuditTimelineEvent => Boolean(entry));
 
-        return parsed.length > 0 ? parsed : this.fallbackBookingsToAudit();
+        return parsed.length > 0
+          ? of(parsed)
+          : this.fallbackBookingsToAudit();
       }),
       catchError(() => this.fallbackBookingsToAudit())
     );
@@ -276,18 +278,18 @@ export class CampusLabApiService {
   private fallbackBookingsToAudit(): Observable<AuditTimelineEvent[]> {
     return this.bookings().pipe(
       map((bookings) =>
-        bookings.map((booking) => ({
+        bookings.map((booking): AuditTimelineEvent => ({
           id: `${booking.id}`,
           user: booking.studentId,
           timestamp: booking.createdAt || booking.startTime,
           action: `Reserva de ${booking.resourceName}`,
           resourceName: booking.resourceName,
           status: booking.status || 'UNKNOWN',
-          category: 'BOOKING',
+          category: 'BOOKING' as const,
           isError: booking.status === 'CANCELLED',
         }))
       ),
-      catchError(() => of([]))
+      catchError(() => of([] as AuditTimelineEvent[]))
     );
   }
 

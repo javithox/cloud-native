@@ -5,6 +5,7 @@ COPY package*.json ./
 
 # Cache npm packages and disable heavy network checks/telemetry
 RUN --mount=type=cache,target=/root/.npm \
+    npm install -g npm@11.6.2 && \
     npm ci --prefer-offline --no-audit --no-fund
 
 COPY . .
