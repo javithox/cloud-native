@@ -85,6 +85,12 @@
                   <span class="detail-label">Recurso</span>
                   <span class="detail-value">{{ event.resourceName }}</span>
                 </div>
+                @if (event.details) {
+                  <div class="detail-row">
+                    <span class="detail-label">Detalle</span>
+                    <span class="detail-value">{{ event.details }}</span>
+                  </div>
+                }
               </div>
             </article>
           }

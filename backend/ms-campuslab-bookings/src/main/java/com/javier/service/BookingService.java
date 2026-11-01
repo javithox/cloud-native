@@ -38,87 +38,98 @@ public class BookingService {
 
     @Transactional
     public BookingResponse createBooking(CreateBookingRequest request) {
-        if (!request.getEndTime().isAfter(request.getStartTime())) {
-            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio");
-        }
-        if (request.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("La reserva debe comenzar en el futuro");
-        }
-        if (bookingRepository.existsOverlappingBooking(request.getResourceId(), request.getStartTime(),
-                request.getEndTime(), Arrays.asList(BookingStatus.CANCELADA, BookingStatus.DEVUELTA))) {
-            throw new IllegalStateException("El recurso ya está reservado en el horario solicitado");
-        }
-        CatalogClient.ResourceInfo resource = catalogClient.getResource(request.getResourceId());
-        if (resource == null || !Boolean.TRUE.equals(resource.active())) {
-            throw new IllegalArgumentException("El recurso seleccionado no existe o está inactivo");
-        }
-        Booking booking = Booking.builder()
-                .studentId(request.getStudentId())
-                .studentEmail(request.getStudentEmail())
-                .resourceId(request.getResourceId())
-                .resourceName(resource.name())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
-                .notes(request.getNotes())
-                .status(BookingStatus.SOLICITADA)
-                .build();
+        String correlationId = "booking-create-" + request.getResourceId() + "-" + System.currentTimeMillis();
+        try {
+            if (!request.getEndTime().isAfter(request.getStartTime())) {
+                throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio");
+            }
+            if (request.getStartTime().isBefore(LocalDateTime.now())) {
+                throw new IllegalArgumentException("La reserva debe comenzar en el futuro");
+            }
+            if (bookingRepository.existsOverlappingBooking(request.getResourceId(), request.getStartTime(),
+                    request.getEndTime(), Arrays.asList(BookingStatus.CANCELADA, BookingStatus.DEVUELTA))) {
+                throw new IllegalStateException("El recurso ya está reservado en el horario solicitado");
+            }
+            CatalogClient.ResourceInfo resource = catalogClient.getResource(request.getResourceId());
+            if (resource == null || !Boolean.TRUE.equals(resource.active())) {
+                throw new IllegalArgumentException("El recurso seleccionado no existe o está inactivo");
+            }
+            Booking booking = Booking.builder()
+                    .studentId(request.getStudentId())
+                    .studentEmail(request.getStudentEmail())
+                    .resourceId(request.getResourceId())
+                    .resourceName(resource.name())
+                    .startTime(request.getStartTime())
+                    .endTime(request.getEndTime())
+                    .notes(request.getNotes())
+                    .status(BookingStatus.SOLICITADA)
+                    .build();
 
-        booking = bookingRepository.save(booking);
-
-        // Notificar creación vía Kafka (Streaming Auditoría/Reportería)
-        publishKafkaEvent("BOOKING_CREATED", booking);
-
-        return mapToResponse(booking);
+            booking = bookingRepository.save(booking);
+            publishKafkaEvent("BOOKING_CREATED", booking, "booking-" + booking.getId());
+            return mapToResponse(booking);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            publishKafkaEvent("BOOKING_CREATE_ERROR", buildBookingErrorPayload(request.getResourceId(), request.getStudentId(), e.getMessage()), correlationId);
+            throw e;
+        }
     }
 
     @Transactional
     public BookingResponse updateBookingStatus(Long id, UpdateStatusRequest request) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con ID: " + id));
+        String correlationId = "booking-status-" + id;
+        try {
+            Booking booking = bookingRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con ID: " + id));
 
-        BookingStatus currentStatus = booking.getStatus();
-        BookingStatus newStatus = request.getStatus();
+            BookingStatus currentStatus = booking.getStatus();
+            BookingStatus newStatus = request.getStatus();
 
-        // Validar Regla del Negocio
-        if (!currentStatus.canTransitionTo(newStatus)) {
-            throw new IllegalStateException(
-                    String.format("Transición de estado inválida: No se puede cambiar de %s a %s[cite: 1]",
-                            currentStatus,
-                            newStatus)
-            );
+            if (!currentStatus.canTransitionTo(newStatus)) {
+                throw new IllegalStateException(
+                        String.format("Transición de estado inválida: No se puede cambiar de %s a %s",
+                                currentStatus,
+                                newStatus)
+                );
+            }
+
+            if (newStatus == BookingStatus.APROBADA) {
+                catalogClient.reserve(booking.getResourceId(), 1);
+            } else if (newStatus == BookingStatus.CANCELADA && currentStatus == BookingStatus.APROBADA) {
+                catalogClient.release(booking.getResourceId(), 1);
+            } else if (newStatus == BookingStatus.DEVUELTA) {
+                catalogClient.release(booking.getResourceId(), 1);
+            }
+            booking.setStatus(newStatus);
+            booking = bookingRepository.save(booking);
+
+            handleStatusSideEffects(booking, newStatus);
+            publishKafkaEvent("BOOKING_STATUS_CHANGED", booking, "booking-" + booking.getId());
+
+            return mapToResponse(booking);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            publishKafkaEvent("BOOKING_STATUS_ERROR", buildBookingErrorPayload(null, "system", e.getMessage()), correlationId);
+            throw e;
         }
-
-        if (newStatus == BookingStatus.APROBADA) {
-            catalogClient.reserve(booking.getResourceId(), 1);
-        } else if (newStatus == BookingStatus.CANCELADA && currentStatus == BookingStatus.APROBADA) {
-            catalogClient.release(booking.getResourceId(), 1);
-        } else if (newStatus == BookingStatus.DEVUELTA) {
-            catalogClient.release(booking.getResourceId(), 1);
-        }
-        booking.setStatus(newStatus);
-        booking = bookingRepository.save(booking);
-
-        // Transiciones y Comandos Asíncronos RabbitMQ[cite: 1]
-        handleStatusSideEffects(booking, newStatus);
-
-        // Evento streaming Kafka[cite: 1]
-        publishKafkaEvent("BOOKING_STATUS_CHANGED", booking);
-
-        return mapToResponse(booking);
     }
 
     @Transactional
     public BookingResponse deleteBooking(Long id) {
-        Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con ID: " + id));
+        String correlationId = "booking-delete-" + id;
+        try {
+            Booking booking = bookingRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con ID: " + id));
 
-        if (booking.getStatus() != BookingStatus.CANCELADA) {
-            booking.setStatus(BookingStatus.CANCELADA);
-            booking = bookingRepository.save(booking);
-            publishKafkaEvent("BOOKING_CANCELLED", booking);
+            if (booking.getStatus() != BookingStatus.CANCELADA) {
+                booking.setStatus(BookingStatus.CANCELADA);
+                booking = bookingRepository.save(booking);
+                publishKafkaEvent("BOOKING_CANCELLED", booking, "booking-" + booking.getId());
+            }
+
+            return mapToResponse(booking);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            publishKafkaEvent("BOOKING_DELETE_ERROR", buildBookingErrorPayload(null, "system", e.getMessage()), correlationId);
+            throw e;
         }
-
-        return mapToResponse(booking);
     }
 
     public BookingResponse getBookingById(Long id) {
@@ -170,14 +181,25 @@ public class BookingService {
         rabbitTemplate.convertAndSend(directExchange, routingKey, payload);
     }
 
-    private void publishKafkaEvent(String eventType, Booking booking) {
+    private void publishKafkaEvent(String eventType, Object payload, String correlationId) {
         try {
-            EventEnvelope<Booking> envelope = EventEnvelope.create(eventType, "booking-" + booking.getId(), booking);
+            EventEnvelope<Object> envelope = EventEnvelope.create(eventType, correlationId, payload);
             String jsonPayload = objectMapper.writeValueAsString(envelope);
-            kafkaTemplate.send(bookingEventsTopic, booking.getId().toString(), jsonPayload);
+            kafkaTemplate.send(bookingEventsTopic, correlationId, jsonPayload);
         } catch (Exception e) {
-            log.error("Error al publicar evento en Kafka para la reserva ID {}", booking.getId(), e);
+            log.error("Error al publicar evento en Kafka para {} con correlationId {}", eventType, correlationId, e);
         }
+    }
+
+    private java.util.Map<String, Object> buildBookingErrorPayload(Long resourceId, String user, String message) {
+        java.util.Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("resourceId", resourceId);
+        payload.put("resourceName", resourceId != null ? "Recurso " + resourceId : "Reserva");
+        payload.put("status", "ERROR");
+        payload.put("details", message);
+        payload.put("user", user == null || user.isBlank() ? "system" : user);
+        payload.put("error", true);
+        return payload;
     }
 
     private BookingResponse mapToResponse(Booking booking) {

@@ -9,6 +9,8 @@ interface AuditEvent {
   action: string;
   resourceName: string;
   status: string;
+  details?: string;
+  isError?: boolean;
 }
 
 @Component({
@@ -81,6 +83,9 @@ export class AuditPage implements OnInit {
       CONFIRMED: '#10b981',
       CANCELLED: '#ef4444',
       COMPLETED: '#3b82f6',
+      SUCCESS: '#10b981',
+      ERROR: '#ef4444',
+      WARNING: '#f59e0b',
     };
     return colorMap[status] || '#6b7280';
   }

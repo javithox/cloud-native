@@ -28,6 +28,18 @@ export interface Resource {
   active: boolean;
 }
 
+export interface AuditTimelineEvent {
+  id: string;
+  user: string;
+  timestamp: string;
+  action: string;
+  resourceName: string;
+  status: string;
+  details?: string;
+  category?: 'RESOURCE' | 'BOOKING' | 'SYSTEM';
+  isError?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CampusLabApiService {
   private readonly http = inject(HttpClient);
@@ -182,28 +194,100 @@ export class CampusLabApiService {
   /**
    * Obtiene eventos de auditoría con información de reservas
    */
-  getAuditWithBookings(): Observable<Array<{
-    id: string;
-    user: string;
-    timestamp: string;
-    action: string;
-    resourceName: string;
-    status: string;
-  }>> {
+  getAuditWithBookings(): Observable<AuditTimelineEvent[]> {
+    return this.audit().pipe(
+      map((entries) => {
+        const parsed = entries
+          .map((entry) => this.parseAuditEntry(entry))
+          .filter((entry): entry is AuditTimelineEvent => Boolean(entry));
+
+        return parsed.length > 0 ? parsed : this.fallbackBookingsToAudit();
+      }),
+      catchError(() => this.fallbackBookingsToAudit())
+    );
+  }
+
+  private parseAuditEntry(entry: {
+    id?: number;
+    eventId?: string;
+    eventType?: string;
+    correlationId?: string;
+    traceId?: string;
+    createdAt?: string;
+    payload?: string;
+    timestamp?: number;
+  }): AuditTimelineEvent | null {
+    const rawPayload = typeof entry.payload === 'string' ? JSON.parse(entry.payload) : entry.payload ?? {};
+    const eventBody = rawPayload.payload ?? rawPayload;
+
+    const status = String(eventBody.status ?? (eventBody.details || /ERROR|FAIL/i.test(entry.eventType ?? '') ? 'ERROR' : 'SUCCESS')).toUpperCase();
+    const isError = status === 'ERROR' || /ERROR|FAIL|DENIED/i.test(entry.eventType ?? '');
+    const action = this.formatAuditAction(entry.eventType, eventBody, isError);
+    const resourceName = eventBody.resourceName ?? eventBody.name ?? eventBody.resource?.name ?? 'Recurso sin nombre';
+    const user = eventBody.user ?? eventBody.createdBy ?? eventBody.studentId ?? 'system';
+    const details = eventBody.details ?? eventBody.message ?? eventBody.notes ?? '';
+    const timestamp = entry.createdAt ?? new Date((entry.timestamp ?? Date.now()) as number).toISOString();
+
+    return {
+      id: entry.eventId ?? `${entry.id ?? entry.timestamp ?? Date.now()}`,
+      user,
+      timestamp,
+      action,
+      resourceName,
+      status,
+      details: details || undefined,
+      category: /RESOURCE/i.test(entry.eventType ?? '') ? 'RESOURCE' : /BOOKING/i.test(entry.eventType ?? '') ? 'BOOKING' : 'SYSTEM',
+      isError,
+    };
+  }
+
+  private formatAuditAction(eventType: string | undefined, eventBody: any, isError: boolean): string {
+    if (eventBody.action) {
+      return eventBody.action;
+    }
+
+    const normalized = (eventType ?? '').replace(/[_-]+/g, ' ').trim().toUpperCase();
+    if (!normalized) {
+      return isError ? 'Error de evento' : 'Evento del sistema';
+    }
+
+    if (normalized.includes('RESOURCE') && normalized.includes('CREATE')) {
+      return isError ? 'Error al crear recurso' : 'Recurso creado';
+    }
+    if (normalized.includes('RESOURCE') && normalized.includes('UPDATE')) {
+      return isError ? 'Error al actualizar recurso' : 'Recurso actualizado';
+    }
+    if (normalized.includes('RESOURCE') && normalized.includes('DELETE')) {
+      return isError ? 'Error al eliminar recurso' : 'Recurso eliminado';
+    }
+    if (normalized.includes('BOOKING') && normalized.includes('CREATE')) {
+      return isError ? 'Error al crear reserva' : 'Reserva creada';
+    }
+    if (normalized.includes('BOOKING') && normalized.includes('STATUS')) {
+      return isError ? 'Error al cambiar estado de la reserva' : 'Estado de reserva actualizado';
+    }
+    if (normalized.includes('BOOKING') && normalized.includes('CANCEL')) {
+      return isError ? 'Error al cancelar reserva' : 'Reserva cancelada';
+    }
+
+    return isError ? 'Error de evento' : 'Evento del sistema';
+  }
+
+  private fallbackBookingsToAudit(): Observable<AuditTimelineEvent[]> {
     return this.bookings().pipe(
-      map((bookings) => {
-        return bookings.map((booking, index) => ({
+      map((bookings) =>
+        bookings.map((booking) => ({
           id: `${booking.id}`,
           user: booking.studentId,
           timestamp: booking.createdAt || booking.startTime,
           action: `Reserva de ${booking.resourceName}`,
           resourceName: booking.resourceName,
           status: booking.status || 'UNKNOWN',
-        }));
-      }),
-      catchError(() => {
-        return of([]);
-      })
+          category: 'BOOKING',
+          isError: booking.status === 'CANCELLED',
+        }))
+      ),
+      catchError(() => of([]))
     );
   }
 
