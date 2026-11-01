@@ -27,10 +27,26 @@
           <strong>{{ resource.availableStock }} / {{ resource.totalStock }} disponibles</strong>
           <div class="resource-actions">
             <button type="button" class="secondary-action" (click)="editResource(resource)">Editar</button>
-            <button type="button" class="danger-button" (click)="deleteResource(resource)">Eliminar</button>
+            <button type="button" class="danger-button" (click)="requestDeleteResource(resource)">Eliminar</button>
           </div>
         </article>
       }
+    </div>
+  }
+
+  @if (confirmDelete) {
+    <div class="confirm-overlay" (click)="closeDeleteConfirm()">
+      <div class="confirm-panel" (click)="$event.stopPropagation()">
+        <div class="confirm-header">
+          <h3>Confirmar eliminación</h3>
+          <button type="button" class="close-button" (click)="closeDeleteConfirm()">×</button>
+        </div>
+        <p>¿Deseas eliminar el recurso <strong>{{ confirmDelete.name }}</strong>?</p>
+        <div class="confirm-actions">
+          <button type="button" class="secondary-action" (click)="closeDeleteConfirm()">Volver</button>
+          <button type="button" class="danger-button" (click)="confirmDeleteResource()">Eliminar recurso</button>
+        </div>
+      </div>
     </div>
   }
 

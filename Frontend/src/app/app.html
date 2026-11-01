@@ -31,13 +31,29 @@
         }
       </nav>
 
-      <button type="button" class="logout" (click)="logout()">Cerrar sesión</button>
+      <button type="button" class="logout" (click)="requestLogout()">Cerrar sesión</button>
     </aside>
   }
 
   <main class="content-shell" [class.content-shell-shifted]="authService.isLoggedIn() && menuOpen">
     <router-outlet />
   </main>
+
+  @if (confirmLogout) {
+    <div class="confirm-overlay" (click)="closeLogoutConfirm()">
+      <div class="confirm-panel" (click)="$event.stopPropagation()">
+        <div class="confirm-header">
+          <h3>Confirmar cierre de sesión</h3>
+          <button type="button" class="close-button" (click)="closeLogoutConfirm()">×</button>
+        </div>
+        <p>¿Seguro que deseas cerrar la sesión actual?</p>
+        <div class="confirm-actions">
+          <button type="button" class="secondary-action" (click)="closeLogoutConfirm()">Volver</button>
+          <button type="button" class="primary-action danger" (click)="confirmLogoutAction()">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  }
 
   <app-toast-container />
 </div>

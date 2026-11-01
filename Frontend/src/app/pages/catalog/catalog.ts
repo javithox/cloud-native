@@ -15,6 +15,7 @@ export class CatalogPage implements OnInit {
   private readonly toastService = inject(ToastService);
   resources: Resource[] = [];
   error = '';
+  confirmDelete: Resource | null = null;
 
   ngOnInit(): void {
     this.reload();
@@ -34,14 +35,31 @@ export class CatalogPage implements OnInit {
     this.router.navigate(['/catalog', resource.id, 'edit']);
   }
 
-  deleteResource(resource: Resource): void {
+  requestDeleteResource(resource: Resource): void {
+    this.confirmDelete = resource;
+  }
+
+  confirmDeleteResource(): void {
+    if (!this.confirmDelete) {
+      return;
+    }
+
+    const resource = this.confirmDelete;
     this.api.deleteResource(resource.id).subscribe({
       next: () => {
         this.toastService.success(`Recurso "${resource.name}" eliminado correctamente.`);
+        this.confirmDelete = null;
         this.reload();
       },
-      error: () => this.toastService.error(`No se pudo eliminar el recurso "${resource.name}".`),
+      error: () => {
+        this.toastService.error(`No se pudo eliminar el recurso "${resource.name}".`);
+        this.confirmDelete = null;
+      },
     });
+  }
+
+  closeDeleteConfirm(): void {
+    this.confirmDelete = null;
   }
 
   goToCreateResource(): void {

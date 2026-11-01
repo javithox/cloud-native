@@ -49,6 +49,24 @@ import { ToastService } from '../../services/toast.service';
           </button>
         </div>
       </form>
+
+      @if (confirmSave) {
+        <div class="confirm-overlay" (click)="confirmSave = false">
+          <div class="confirm-panel" (click)="$event.stopPropagation()">
+            <div class="confirm-header">
+              <h3>{{ isEditMode ? 'Confirmar actualización' : 'Confirmar creación' }}</h3>
+              <button type="button" class="close-button" (click)="confirmSave = false">×</button>
+            </div>
+            <p>¿Deseas {{ isEditMode ? 'actualizar' : 'crear' }} este recurso?</p>
+            <div class="confirm-actions">
+              <button type="button" class="secondary-action" (click)="confirmSave = false">Volver</button>
+              <button type="button" class="primary-action" (click)="confirmSubmit()">
+                {{ isEditMode ? 'Confirmar actualización' : 'Confirmar creación' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </section>
   `,
   styles: [
@@ -67,7 +85,14 @@ import { ToastService } from '../../services/toast.service';
     '.primary-action:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 24px rgba(37,99,235,0.28); }',
     '.primary-action:disabled { opacity: 0.55; cursor: not-allowed; }',
     '.secondary-action { border: 1px solid #cbd5e1; background: white; color: #0f172a; border-radius: 12px; padding: 12px 18px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }',
-    '.secondary-action:hover { background: #f8fafc; border-color: #94a3b8; }'
+    '.secondary-action:hover { background: #f8fafc; border-color: #94a3b8; }',
+    '.confirm-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 20px; }',
+    '.confirm-panel { width: min(420px, 100%); background: white; border-radius: 18px; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2); padding: 22px; }',
+    '.confirm-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }',
+    '.confirm-header h3 { margin: 0; font-size: 1.3rem; }',
+    '.close-button { border: none; background: transparent; font-size: 1.7rem; line-height: 1; cursor: pointer; color: #475569; }',
+    '.confirm-panel p { margin: 0 0 20px; color: #334155; line-height: 1.5; }',
+    '.confirm-actions { display: flex; justify-content: flex-end; gap: 12px; }'
   ]
 })
 export class CatalogFormPage implements OnInit {
@@ -79,6 +104,7 @@ export class CatalogFormPage implements OnInit {
   isEditMode = false;
   resourceId: number | null = null;
   isSubmitting = false;
+  confirmSave = false;
 
   form = {
     name: '',
@@ -119,6 +145,11 @@ export class CatalogFormPage implements OnInit {
       return;
     }
 
+    this.confirmSave = true;
+  }
+
+  confirmSubmit(): void {
+    this.confirmSave = false;
     this.isSubmitting = true;
 
     const payload = {

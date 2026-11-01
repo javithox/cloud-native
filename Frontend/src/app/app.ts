@@ -17,6 +17,7 @@ import { ToastService } from './services/toast.service';
 })
 export class App implements OnInit, OnDestroy {
   menuOpen = false;
+  confirmLogout = false;
   private readonly destroy$ = new Subject<void>();
 
   readonly navItems: Array<{ label: string; path: string; roles: AppRole[] }> = [
@@ -67,11 +68,19 @@ export class App implements OnInit, OnDestroy {
     this.menuOpen = false;
   }
 
-  logout(): void {
+  requestLogout(): void {
     this.menuOpen = false;
+    this.confirmLogout = true;
+  }
+
+  confirmLogoutAction(): void {
+    this.confirmLogout = false;
     this.toastService.info('Cerrando sesión...');
-    this.toastService.success('Sesión cerrada correctamente.');
     this.authService.logout();
+  }
+
+  closeLogoutConfirm(): void {
+    this.confirmLogout = false;
   }
 
   ngOnDestroy(): void {
