@@ -11,7 +11,6 @@ public class CatalogDTOs {
 
     @Data
     public static class CreateResourceRequest {
-        @NotBlank(message = "El código es obligatorio")
         private String code;
 
         @NotBlank(message = "El nombre es obligatorio")

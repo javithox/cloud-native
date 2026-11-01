@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,12 +32,16 @@ public class ResourceService {
     public ResourceResponse createResource(CreateResourceRequest request) {
         String correlationId = "resource-create-" + System.currentTimeMillis();
         try {
-            if (resourceRepository.findByCode(request.getCode()).isPresent()) {
-                throw new IllegalArgumentException("Ya existe un recurso con el código: " + request.getCode());
+            String generatedCode = (request.getCode() == null || request.getCode().isBlank())
+                    ? "RES-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase()
+                    : request.getCode();
+
+            if (resourceRepository.findByCode(generatedCode).isPresent()) {
+                throw new IllegalArgumentException("Ya existe un recurso con el código: " + generatedCode);
             }
 
             Resource resource = Resource.builder()
-                    .code(request.getCode())
+                    .code(generatedCode)
                     .name(request.getName())
                     .description(request.getDescription())
                     .type(request.getType())

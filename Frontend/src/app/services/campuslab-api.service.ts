@@ -97,7 +97,7 @@ export class CampusLabApiService {
   }
 
   createResource(payload: {
-    code: string;
+    code?: string;
     name: string;
     description?: string;
     type: string;

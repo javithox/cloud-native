@@ -20,10 +20,6 @@ import { CampusLabApiService } from '../../services/campuslab-api.service';
       <form class="form-card" (ngSubmit)="submit()">
         <div class="field-grid">
           <label>
-            <span>Código</span>
-            <input [(ngModel)]="form.code" name="code" required />
-          </label>
-          <label>
             <span>Nombre</span>
             <input [(ngModel)]="form.name" name="name" required />
           </label>
@@ -83,7 +79,6 @@ export class CatalogFormPage implements OnInit {
   isSubmitting = false;
 
   form = {
-    code: '',
     name: '',
     description: '',
     type: 'LABORATORIO',
@@ -91,7 +86,7 @@ export class CatalogFormPage implements OnInit {
   };
 
   get isSubmitDisabled(): boolean {
-    return !this.form.code.trim() || !this.form.name.trim() || !this.form.type || Number(this.form.totalStock) < 0;
+    return !this.form.name.trim() || !this.form.type || Number(this.form.totalStock) < 0;
   }
 
   ngOnInit(): void {
@@ -106,7 +101,6 @@ export class CatalogFormPage implements OnInit {
     this.api.getResourceById(this.resourceId).subscribe({
       next: (resource) => {
         this.form = {
-          code: resource.code,
           name: resource.name,
           description: resource.description ?? '',
           type: resource.type,
@@ -126,7 +120,6 @@ export class CatalogFormPage implements OnInit {
     this.isSubmitting = true;
 
     const payload = {
-      code: this.form.code.trim(),
       name: this.form.name.trim(),
       description: this.form.description.trim() || undefined,
       type: this.form.type,
