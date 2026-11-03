@@ -7,7 +7,7 @@ describe('MSAL interceptor protected resources', () => {
     const scopes = config.protectedResourceMap.get('http://localhost:8090/api/bookings');
 
     expect(scopes).toEqual([
-      'api://00000000-0000-0000-0000-000000000000/archivos',
+      'api://e03479f6-d22d-4624-aa81-6e724d570329/archivos',
     ]);
     expect(config.protectedResourceMap.has('http://localhost:8090/api/bookings/*')).toBe(true);
   });
