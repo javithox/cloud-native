@@ -54,9 +54,12 @@ export class DashboardPage implements OnInit, OnDestroy {
 
   metrics: DashboardMetric[] = [];
   isLoadingMetrics = false;
+  isRefreshingMetrics = false;
   metricsError: string | null = null;
   isLoadingResourceChart = false;
+  isRefreshingResourceChart = false;
   isLoadingStatusChart = false;
+  isRefreshingStatusChart = false;
   resourceUsageChart: ResourceUsageChartItem[] = [];
   statusUsageChart: ResourceUsageChartItem[] = [];
   donutStyle: string = 'conic-gradient(#dbeafe 0 100%)';
@@ -94,7 +97,9 @@ export class DashboardPage implements OnInit, OnDestroy {
   }
 
   private loadResourceUsageChart(): void {
-    this.isLoadingResourceChart = true;
+    const hasExistingData = this.resourceUsageChart.length > 0;
+    this.isLoadingResourceChart = !hasExistingData;
+    this.isRefreshingResourceChart = hasExistingData;
 
     this.api.getReportStats().subscribe({
       next: (stats) => {
@@ -110,17 +115,21 @@ export class DashboardPage implements OnInit, OnDestroy {
 
         this.donutStyle = this.toConicGradient(this.resourceUsageChart);
         this.isLoadingResourceChart = false;
+        this.isRefreshingResourceChart = false;
       },
       error: () => {
         this.resourceUsageChart = [];
         this.donutStyle = 'conic-gradient(#dbeafe 0 100%)';
         this.isLoadingResourceChart = false;
+        this.isRefreshingResourceChart = false;
       },
     });
   }
 
   private loadBookingStatusChart(): void {
-    this.isLoadingStatusChart = true;
+    const hasExistingData = this.statusUsageChart.length > 0;
+    this.isLoadingStatusChart = !hasExistingData;
+    this.isRefreshingStatusChart = hasExistingData;
 
     this.api.getReportStats().subscribe({
       next: (stats) => {
@@ -138,11 +147,13 @@ export class DashboardPage implements OnInit, OnDestroy {
 
         this.statusDonutStyle = this.toConicGradient(this.statusUsageChart);
         this.isLoadingStatusChart = false;
+        this.isRefreshingStatusChart = false;
       },
       error: () => {
         this.statusUsageChart = [];
         this.statusDonutStyle = 'conic-gradient(#dbeafe 0 100%)';
         this.isLoadingStatusChart = false;
+        this.isRefreshingStatusChart = false;
       },
     });
   }
@@ -170,9 +181,14 @@ export class DashboardPage implements OnInit, OnDestroy {
   }
 
   private loadDashboardMetrics(): void {
-    this.isLoadingMetrics = true;
+    const hasExistingMetrics = this.metrics.length > 0;
+    this.isLoadingMetrics = !hasExistingMetrics;
+    this.isRefreshingMetrics = hasExistingMetrics;
     this.metricsError = null;
-    this.metrics = [];
+
+    if (!hasExistingMetrics) {
+      this.metrics = [];
+    }
 
     switch (this.selectedRole) {
       case 'Admin':
@@ -200,9 +216,12 @@ export class DashboardPage implements OnInit, OnDestroy {
                 },
               ];
               this.isLoadingMetrics = false;
+              this.isRefreshingMetrics = false;
             },
             error: (err) => {
               this.metricsError = 'Error al cargar métricas de administrador';
+              this.isLoadingMetrics = false;
+              this.isRefreshingMetrics = false;
               this.loadFallbackMetrics();
             },
           });
@@ -233,9 +252,12 @@ export class DashboardPage implements OnInit, OnDestroy {
                 },
               ];
               this.isLoadingMetrics = false;
+              this.isRefreshingMetrics = false;
             },
             error: (err) => {
               this.metricsError = 'Error al cargar métricas de técnico';
+              this.isLoadingMetrics = false;
+              this.isRefreshingMetrics = false;
               this.loadFallbackMetrics();
             },
           });
@@ -266,9 +288,12 @@ export class DashboardPage implements OnInit, OnDestroy {
                 },
               ];
               this.isLoadingMetrics = false;
+              this.isRefreshingMetrics = false;
             },
             error: (err) => {
               this.metricsError = 'Error al cargar métricas de estudiante';
+              this.isLoadingMetrics = false;
+              this.isRefreshingMetrics = false;
               this.loadFallbackMetrics();
             },
           });

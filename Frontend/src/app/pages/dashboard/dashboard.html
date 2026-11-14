@@ -18,7 +18,7 @@
   </header>
   @if (isLoadingResourceChart || isLoadingStatusChart) {
     <section class="charts-grid">
-      @if (isLoadingResourceChart) {
+      @if (isLoadingResourceChart && resourceUsageChart.length === 0) {
         <article class="chart-panel chart-skeleton-panel">
           <div class="skeleton-title shimmer"></div>
           <div class="chart-layout skeleton-layout">
@@ -35,7 +35,7 @@
         </article>
       }
 
-      @if (isLoadingStatusChart) {
+      @if (isLoadingStatusChart && statusUsageChart.length === 0) {
         <article class="chart-panel chart-skeleton-panel">
           <div class="skeleton-title shimmer"></div>
           <div class="chart-layout skeleton-layout">
@@ -55,7 +55,7 @@
   } @else if (resourceUsageChart.length > 0 || statusUsageChart.length > 0) {
     <section class="charts-grid">
       @if (resourceUsageChart.length > 0) {
-        <article class="chart-panel">
+        <article class="chart-panel" [class.is-refreshing]="isRefreshingResourceChart">
           <h2>Recursos más usados</h2>
           <div class="chart-layout">
             <div class="donut-wrapper">
@@ -86,7 +86,7 @@
       }
 
       @if (statusUsageChart.length > 0) {
-        <article class="chart-panel">
+        <article class="chart-panel" [class.is-refreshing]="isRefreshingStatusChart">
           <h2>Reservas por estado</h2>
           <div class="chart-layout">
             <div class="donut-wrapper">
@@ -147,7 +147,7 @@
         </div>
       }
 
-      <div class="stats-grid">
+      <div class="stats-grid" [class.is-refreshing]="isRefreshingMetrics">
         @for (metric of metrics; track metric.label) {
           <article class="stat-card">
             <div class="card-header">

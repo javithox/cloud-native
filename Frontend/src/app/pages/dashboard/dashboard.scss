@@ -238,6 +238,12 @@ h3 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.stats-grid.is-refreshing {
+  opacity: 0.82;
+  transform: translateY(2px);
 }
 
 .stat-card {
@@ -300,6 +306,12 @@ h3 {
   border-radius: 12px;
   padding: 24px;
   animation: fadeUp 0.4s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.chart-panel.is-refreshing {
+  opacity: 0.82;
+  transform: translateY(2px);
 }
 
 .chart-layout {
