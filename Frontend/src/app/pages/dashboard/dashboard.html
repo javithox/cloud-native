@@ -17,23 +17,6 @@
     }
   </header>
 
-  <!-- Descripción y capabilidades -->
-  <section class="role-summary">
-    <div class="summary-content">
-      <div class="summary-text">
-        <p class="description">{{ roleDefinition.description }}</p>
-      </div>
-      <div class="capabilities">
-        <h3>Capacidades</h3>
-        <ul class="capabilities-list">
-          @for (capability of capabilities(); track capability) {
-            <li>✓ {{ capability }}</li>
-          }
-        </ul>
-      </div>
-    </div>
-  </section>
-
   <!-- Métricas -->
   <section class="metrics-section">
     <h2>Indicadores clave</h2>
