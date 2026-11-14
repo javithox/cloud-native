@@ -16,7 +16,43 @@
       </div>
     }
   </header>
-    @if (resourceUsageChart.length > 0 || statusUsageChart.length > 0) {
+  @if (isLoadingResourceChart || isLoadingStatusChart) {
+    <section class="charts-grid">
+      @if (isLoadingResourceChart) {
+        <article class="chart-panel chart-skeleton-panel">
+          <div class="skeleton-title shimmer"></div>
+          <div class="chart-layout skeleton-layout">
+            <div class="donut-wrapper">
+              <div class="skeleton-donut shimmer"></div>
+            </div>
+            <div class="legend-list">
+              <div class="skeleton-line shimmer"></div>
+              <div class="skeleton-line shimmer"></div>
+              <div class="skeleton-line shimmer"></div>
+              <div class="skeleton-line shimmer"></div>
+            </div>
+          </div>
+        </article>
+      }
+
+      @if (isLoadingStatusChart) {
+        <article class="chart-panel chart-skeleton-panel">
+          <div class="skeleton-title shimmer"></div>
+          <div class="chart-layout skeleton-layout">
+            <div class="donut-wrapper">
+              <div class="skeleton-donut shimmer"></div>
+            </div>
+            <div class="legend-list">
+              <div class="skeleton-line shimmer"></div>
+              <div class="skeleton-line shimmer"></div>
+              <div class="skeleton-line shimmer"></div>
+              <div class="skeleton-line shimmer"></div>
+            </div>
+          </div>
+        </article>
+      }
+    </section>
+  } @else if (resourceUsageChart.length > 0 || statusUsageChart.length > 0) {
     <section class="charts-grid">
       @if (resourceUsageChart.length > 0) {
         <article class="chart-panel">
@@ -87,8 +123,22 @@
     <h2>Indicadores clave</h2>
 
     @if (isLoadingMetrics) {
-      <div class="loading">
-        <p>Cargando métricas...</p>
+      <div class="stats-grid skeleton-grid" aria-live="polite">
+        <article class="stat-card skeleton-card">
+          <div class="skeleton-line shimmer skeleton-label"></div>
+          <div class="skeleton-line shimmer skeleton-value"></div>
+          <div class="skeleton-line shimmer skeleton-mini"></div>
+        </article>
+        <article class="stat-card skeleton-card">
+          <div class="skeleton-line shimmer skeleton-label"></div>
+          <div class="skeleton-line shimmer skeleton-value"></div>
+          <div class="skeleton-line shimmer skeleton-mini"></div>
+        </article>
+        <article class="stat-card skeleton-card">
+          <div class="skeleton-line shimmer skeleton-label"></div>
+          <div class="skeleton-line shimmer skeleton-value"></div>
+          <div class="skeleton-line shimmer skeleton-mini"></div>
+        </article>
       </div>
     } @else {
       @if (metricsError) {

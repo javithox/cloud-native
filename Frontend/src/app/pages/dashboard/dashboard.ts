@@ -55,6 +55,8 @@ export class DashboardPage implements OnInit, OnDestroy {
   metrics: DashboardMetric[] = [];
   isLoadingMetrics = false;
   metricsError: string | null = null;
+  isLoadingResourceChart = false;
+  isLoadingStatusChart = false;
   resourceUsageChart: ResourceUsageChartItem[] = [];
   statusUsageChart: ResourceUsageChartItem[] = [];
   donutStyle: string = 'conic-gradient(#dbeafe 0 100%)';
@@ -92,6 +94,8 @@ export class DashboardPage implements OnInit, OnDestroy {
   }
 
   private loadResourceUsageChart(): void {
+    this.isLoadingResourceChart = true;
+
     this.api.getReportStats().subscribe({
       next: (stats) => {
         const total = stats.topResources.reduce((sum, resource) => sum + resource.bookingCount, 0);
@@ -105,15 +109,19 @@ export class DashboardPage implements OnInit, OnDestroy {
         }));
 
         this.donutStyle = this.toConicGradient(this.resourceUsageChart);
+        this.isLoadingResourceChart = false;
       },
       error: () => {
         this.resourceUsageChart = [];
         this.donutStyle = 'conic-gradient(#dbeafe 0 100%)';
+        this.isLoadingResourceChart = false;
       },
     });
   }
 
   private loadBookingStatusChart(): void {
+    this.isLoadingStatusChart = true;
+
     this.api.getReportStats().subscribe({
       next: (stats) => {
         const total = Object.values(stats.bookingsByStatus).reduce((sum, value) => sum + value, 0);
@@ -129,10 +137,12 @@ export class DashboardPage implements OnInit, OnDestroy {
           .slice(0, 6);
 
         this.statusDonutStyle = this.toConicGradient(this.statusUsageChart);
+        this.isLoadingStatusChart = false;
       },
       error: () => {
         this.statusUsageChart = [];
         this.statusDonutStyle = 'conic-gradient(#dbeafe 0 100%)';
+        this.isLoadingStatusChart = false;
       },
     });
   }

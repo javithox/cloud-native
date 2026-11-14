@@ -137,10 +137,92 @@ h3 {
   padding: 24px;
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .loading {
   text-align: center;
   padding: 40px;
   color: #6b7280;
+}
+
+.skeleton-grid {
+  animation: fadeUp 0.35s ease;
+}
+
+.skeleton-card,
+.chart-skeleton-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.14) 0%,
+    rgba(148, 163, 184, 0.3) 30%,
+    rgba(148, 163, 184, 0.14) 60%,
+    rgba(148, 163, 184, 0.14) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 10px;
+}
+
+.skeleton-line {
+  height: 12px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.skeleton-label {
+  width: 55%;
+  height: 12px;
+  margin-bottom: 18px;
+}
+
+.skeleton-value {
+  width: 72%;
+  height: 34px;
+  margin-bottom: 12px;
+}
+
+.skeleton-mini {
+  width: 30%;
+  height: 10px;
+}
+
+.skeleton-title {
+  width: 52%;
+  height: 22px;
+  margin-bottom: 20px;
+}
+
+.skeleton-donut {
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+}
+
+.chart-skeleton-panel {
+  animation: fadeUp 0.35s ease;
 }
 
 .error-message {
@@ -168,6 +250,7 @@ h3 {
   gap: 12px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  animation: fadeUp 0.4s ease;
 
   &:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -216,6 +299,7 @@ h3 {
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 12px;
   padding: 24px;
+  animation: fadeUp 0.4s ease;
 }
 
 .chart-layout {
