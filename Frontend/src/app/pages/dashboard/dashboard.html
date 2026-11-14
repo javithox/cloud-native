@@ -16,34 +16,69 @@
       </div>
     }
   </header>
-    @if (resourceUsageChart.length > 0) {
-    <section class="chart-panel">
-      <h2>Recursos más usados</h2>
-      <div class="chart-layout">
-        <div class="donut-wrapper">
-          <div class="donut-chart" [style.background]="donutStyle">
-            <div class="donut-center">
-              <strong>{{ resourceUsageChart[0]?.percentage || 0 }}%</strong>
-              <span>top</span>
+    @if (resourceUsageChart.length > 0 || statusUsageChart.length > 0) {
+    <section class="charts-grid">
+      @if (resourceUsageChart.length > 0) {
+        <article class="chart-panel">
+          <h2>Recursos más usados</h2>
+          <div class="chart-layout">
+            <div class="donut-wrapper">
+              <div class="donut-chart" [style.background]="donutStyle">
+                <div class="donut-center">
+                  <strong>{{ resourceUsageChart[0]?.percentage || 0 }}%</strong>
+                  <span>top</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="legend-list">
+              @for (item of resourceUsageChart; track item.name) {
+                <div class="legend-item">
+                  <div class="legend-label">
+                    <span class="legend-dot" [style.background]="item.color"></span>
+                    <span>{{ item.name }}</span>
+                  </div>
+                  <div class="legend-values">
+                    <strong>{{ item.percentage }}%</strong>
+                    <small>{{ item.count }} reservas</small>
+                  </div>
+                </div>
+              }
             </div>
           </div>
-        </div>
+        </article>
+      }
 
-        <div class="legend-list">
-          @for (item of resourceUsageChart; track item.name) {
-            <div class="legend-item">
-              <div class="legend-label">
-                <span class="legend-dot" [style.background]="item.color"></span>
-                <span>{{ item.name }}</span>
-              </div>
-              <div class="legend-values">
-                <strong>{{ item.percentage }}%</strong>
-                <small>{{ item.count }} reservas</small>
+      @if (statusUsageChart.length > 0) {
+        <article class="chart-panel">
+          <h2>Reservas por estado</h2>
+          <div class="chart-layout">
+            <div class="donut-wrapper">
+              <div class="donut-chart" [style.background]="statusDonutStyle">
+                <div class="donut-center">
+                  <strong>{{ statusUsageChart[0]?.percentage || 0 }}%</strong>
+                  <span>top</span>
+                </div>
               </div>
             </div>
-          }
-        </div>
-      </div>
+
+            <div class="legend-list">
+              @for (item of statusUsageChart; track item.name) {
+                <div class="legend-item">
+                  <div class="legend-label">
+                    <span class="legend-dot" [style.background]="item.color"></span>
+                    <span>{{ item.name }}</span>
+                  </div>
+                  <div class="legend-values">
+                    <strong>{{ item.percentage }}%</strong>
+                    <small>{{ item.count }} reservas</small>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </article>
+      }
     </section>
   }
 

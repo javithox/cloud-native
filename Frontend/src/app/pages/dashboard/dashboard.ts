@@ -56,7 +56,9 @@ export class DashboardPage implements OnInit, OnDestroy {
   isLoadingMetrics = false;
   metricsError: string | null = null;
   resourceUsageChart: ResourceUsageChartItem[] = [];
+  statusUsageChart: ResourceUsageChartItem[] = [];
   donutStyle: string = 'conic-gradient(#dbeafe 0 100%)';
+  statusDonutStyle: string = 'conic-gradient(#dbeafe 0 100%)';
 
   ngOnInit(): void {
     // Establecer rol actual y verificar si es Admin
@@ -70,6 +72,7 @@ export class DashboardPage implements OnInit, OnDestroy {
 
     this.loadDashboardMetrics();
     this.loadResourceUsageChart();
+    this.loadBookingStatusChart();
     this.startPolling();
   }
 
@@ -84,6 +87,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       .subscribe(() => {
         this.loadDashboardMetrics();
         this.loadResourceUsageChart();
+        this.loadBookingStatusChart();
       });
   }
 
@@ -100,22 +104,52 @@ export class DashboardPage implements OnInit, OnDestroy {
           color: palette[index % palette.length],
         }));
 
-        let accumulated = 0;
-        const gradient = this.resourceUsageChart
-          .map((item) => {
-            const start = accumulated;
-            accumulated += item.percentage;
-            return `${item.color} ${start}% ${accumulated}%`;
-          })
-          .join(', ');
-
-        this.donutStyle = `conic-gradient(${gradient || '#dbeafe 0 100%'})`;
+        this.donutStyle = this.toConicGradient(this.resourceUsageChart);
       },
       error: () => {
         this.resourceUsageChart = [];
         this.donutStyle = 'conic-gradient(#dbeafe 0 100%)';
       },
     });
+  }
+
+  private loadBookingStatusChart(): void {
+    this.api.getReportStats().subscribe({
+      next: (stats) => {
+        const total = Object.values(stats.bookingsByStatus).reduce((sum, value) => sum + value, 0);
+        const palette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6'];
+
+        this.statusUsageChart = Object.entries(stats.bookingsByStatus || {})
+          .map(([status, count], index) => ({
+            name: status,
+            count,
+            percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+            color: palette[index % palette.length],
+          }))
+          .slice(0, 6);
+
+        this.statusDonutStyle = this.toConicGradient(this.statusUsageChart);
+      },
+      error: () => {
+        this.statusUsageChart = [];
+        this.statusDonutStyle = 'conic-gradient(#dbeafe 0 100%)';
+      },
+    });
+  }
+
+  private toConicGradient(items: ResourceUsageChartItem[]): string {
+    if (!items.length) return 'conic-gradient(#dbeafe 0 100%)';
+
+    let accumulated = 0;
+    const gradient = items
+      .map((item) => {
+        const start = accumulated;
+        accumulated += item.percentage;
+        return `${item.color} ${start}% ${accumulated}%`;
+      })
+      .join(', ');
+
+    return `conic-gradient(${gradient || '#dbeafe 0 100%'})`;
   }
 
   onRoleChange(): void {
