@@ -59,19 +59,19 @@ public class NotificationListener {
     // =========================================================================
 
     @RabbitListener(queues = "q.cmd.email.dlq")
-    public void handleEmailDlq(Message message, @Header(value = "x-death", required = false) List> xDeath) {
+    public void handleEmailDlq(Message message, @Header(value = "x-death", required = false) List<Map<String, ?>> xDeath) {
         String payload = new String(message.getBody());
         log.error("ALERT - MENSAJE EN DLQ [q.cmd.email.dlq]. Payload: {} | Metadatos de fallo x-death: {}", payload, xDeath);
     }
 
     @RabbitListener(queues = "q.cmd.prep.dlq")
-    public void handlePrepDlq(Message message, @Header(value = "x-death", required = false) List> xDeath) {
+    public void handlePrepDlq(Message message, @Header(value = "x-death", required = false) List<Map<String, ?>> xDeath) {
         String payload = new String(message.getBody());
         log.error("ALERT - MENSAJE EN DLQ [q.cmd.prep.dlq]. Payload: {} | Metadatos de fallo x-death: {}", payload, xDeath);
     }
 
     @RabbitListener(queues = "q.cmd.voucher.dlq")
-    public void handleVoucherDlq(Message message, @Header(value = "x-death", required = false) List> xDeath) {
+    public void handleVoucherDlq(Message message, @Header(value = "x-death", required = false) List<Map<String, ?>> xDeath) {
         String payload = new String(message.getBody());
         log.error("ALERT - MENSAJE EN DLQ [q.cmd.voucher.dlq]. Payload: {} | Metadatos de fallo x-death: {}", payload, xDeath);
     }

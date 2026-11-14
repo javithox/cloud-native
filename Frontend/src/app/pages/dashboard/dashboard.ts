@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CampusLabApiService } from '../../services/campuslab-api.service';
 import { getRoleDefinition, AppRole, ROLE_DEFINITIONS } from '../../services/role-permissions';
-import { Subject } from 'rxjs';
+import { Subject, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 interface DashboardMetric {
@@ -53,18 +53,27 @@ export class DashboardPage implements OnInit, OnDestroy {
     // Establecer rol actual y verificar si es Admin
     this.selectedRole = (this.authService.getRole() as AppRole) || 'Estudiante';
     this.isAdmin = this.selectedRole === 'Admin';
-    
+
     // Si no es Admin, no permitir cambio de rol
     if (!this.isAdmin) {
       this.selectedRole = this.authService.getRole() as AppRole;
     }
 
     this.loadDashboardMetrics();
+    this.startPolling();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private startPolling(): void {
+    interval(5000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadDashboardMetrics();
+      });
   }
 
   onRoleChange(): void {

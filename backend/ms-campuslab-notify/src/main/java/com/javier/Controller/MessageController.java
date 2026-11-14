@@ -33,13 +33,7 @@ public class MessageController {
         }
     }
 
-    /**
-     * Enviar un mensaje vía GET.
-     *
-     * Ejemplo:
-     *
-     * http://localhost:8080/api/messages/send?message=Hello%20World
-     */
+
     @GetMapping("/send")
     public ResponseEntity<String> sendMessageGet(
             @RequestParam(name = "message", defaultValue = "") String message) {
@@ -55,9 +49,7 @@ public class MessageController {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
-    /**
-     * DTO para recibir el mensaje en formato JSON.
-     */
+
     public static class MessageRequest {
 
         private String message;

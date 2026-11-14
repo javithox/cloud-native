@@ -116,7 +116,7 @@ public class RabbitMQConfig {
         // Al agotar los 3 intentos, ejecuta RejectAndDontRequeueRecoverer 
         // lo que envía un NACK con requeue=false a RabbitMQ para enviarlo a la DLQ.
         factory.setAdviceChain(RetryInterceptorBuilder.stateless()
-                .maxAttempts(3)
+                .maxRetries(3)
                 .backOffOptions(1000, 2.0, 5000)
                 .recoverer(new RejectAndDontRequeueRecoverer())
                 .build());
