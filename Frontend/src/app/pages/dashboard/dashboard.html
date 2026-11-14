@@ -51,6 +51,37 @@
     }
   </section>
 
+  @if (resourceUsageChart.length > 0) {
+    <section class="chart-panel">
+      <h2>Recursos más usados</h2>
+      <div class="chart-layout">
+        <div class="donut-wrapper">
+          <div class="donut-chart" [style.background]="donutStyle">
+            <div class="donut-center">
+              <strong>{{ resourceUsageChart[0]?.percentage || 0 }}%</strong>
+              <span>top</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="legend-list">
+          @for (item of resourceUsageChart; track item.name) {
+            <div class="legend-item">
+              <div class="legend-label">
+                <span class="legend-dot" [style.background]="item.color"></span>
+                <span>{{ item.name }}</span>
+              </div>
+              <div class="legend-values">
+                <strong>{{ item.percentage }}%</strong>
+                <small>{{ item.count }} reservas</small>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
+
   <!-- Acciones habilitadas -->
   <section class="action-panel">
     <h2>Acciones habilitadas para {{ roleDefinition.label }}</h2>

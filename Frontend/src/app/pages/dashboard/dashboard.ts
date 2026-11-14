@@ -14,6 +14,13 @@ interface DashboardMetric {
   unit?: string;
 }
 
+interface ResourceUsageChartItem {
+  name: string;
+  count: number;
+  percentage: number;
+  color: string;
+}
+
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
@@ -48,6 +55,8 @@ export class DashboardPage implements OnInit, OnDestroy {
   metrics: DashboardMetric[] = [];
   isLoadingMetrics = false;
   metricsError: string | null = null;
+  resourceUsageChart: ResourceUsageChartItem[] = [];
+  donutStyle: string = 'conic-gradient(#dbeafe 0 100%)';
 
   ngOnInit(): void {
     // Establecer rol actual y verificar si es Admin
@@ -60,6 +69,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     }
 
     this.loadDashboardMetrics();
+    this.loadResourceUsageChart();
     this.startPolling();
   }
 
@@ -73,7 +83,39 @@ export class DashboardPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.loadDashboardMetrics();
+        this.loadResourceUsageChart();
       });
+  }
+
+  private loadResourceUsageChart(): void {
+    this.api.getReportStats().subscribe({
+      next: (stats) => {
+        const total = stats.topResources.reduce((sum, resource) => sum + resource.bookingCount, 0);
+        const palette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+        this.resourceUsageChart = stats.topResources.slice(0, 6).map((resource, index) => ({
+          name: resource.resourceName,
+          count: resource.bookingCount,
+          percentage: total > 0 ? Math.round((resource.bookingCount / total) * 100) : 0,
+          color: palette[index % palette.length],
+        }));
+
+        let accumulated = 0;
+        const gradient = this.resourceUsageChart
+          .map((item) => {
+            const start = accumulated;
+            accumulated += item.percentage;
+            return `${item.color} ${start}% ${accumulated}%`;
+          })
+          .join(', ');
+
+        this.donutStyle = `conic-gradient(${gradient || '#dbeafe 0 100%'})`;
+      },
+      error: () => {
+        this.resourceUsageChart = [];
+        this.donutStyle = 'conic-gradient(#dbeafe 0 100%)';
+      },
+    });
   }
 
   onRoleChange(): void {
