@@ -200,7 +200,7 @@ services:
       RABBITMQ_ADMIN_BASE_URL: http://ms-campuslab-rabbitmq-admin:8086
       KAFKA_ADMIN_BASE_URL: http://ms-campuslab-kafka-admin:8087
     ports:
-      - "127.0.0.1:${BFF_PORT:-8090}:8090"
+      - "172.31.46.148:${BFF_PORT:-8090}:8090"
     depends_on:
       - ms-campuslab-bookings
       - ms-campuslab-catalog
