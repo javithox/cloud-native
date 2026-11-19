@@ -46,7 +46,7 @@ campuslab:
       booking-events: bookings.events
   security:
     jwt:
-      audience: ${JWT_AUDIENCE:api://00000000-0000-0000-0000-000000000000}
+      audience: ${JWT_AUDIENCE:api://e03479f6-d22d-4624-aa81-6e724d570329}
 
 # Seguridad habilitada también en perfil local; usar APP_SECURITY_ENABLED=false solo en un entorno aislado.
 app:

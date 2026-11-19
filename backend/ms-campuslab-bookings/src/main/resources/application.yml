@@ -50,4 +50,4 @@ campuslab:
 
   security:
     jwt:
-      audience: ${JWT_AUDIENCE:api://00000000-0000-0000-0000-000000000000}
+      audience: ${JWT_AUDIENCE:api://e03479f6-d22d-4624-aa81-6e724d570329}
