@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Expone las operaciones HTTP para consultar y administrar recursos del catálogo.
+ */
 @RestController
 @RequestMapping("/api/catalog")
 @RequiredArgsConstructor

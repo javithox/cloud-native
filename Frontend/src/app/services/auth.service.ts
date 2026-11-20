@@ -24,6 +24,9 @@ import {
 
 const ROLE_STORAGE_KEY = 'campuslab-role';
 
+/**
+ * Gestiona inicio y cierre de sesión, cuenta activa, rol y permisos con MSAL.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -86,9 +89,7 @@ export class AuthService implements OnDestroy {
       });
   }
 
-  /**
-   * Indica si existe una sesión autenticada activa.
-   */
+  /** Indica si existe una sesión autenticada activa. */
   isLoggedIn(): boolean {
     if (typeof window === 'undefined') {
       return false;
@@ -108,7 +109,7 @@ export class AuthService implements OnDestroy {
   }
 
   /**
-   * Obtiene el rol almacenado.
+   * Obtiene el rol almacenado o derivado de los claims del usuario.
    */
   getRole(): AppRole | null {
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
@@ -243,7 +244,7 @@ export class AuthService implements OnDestroy {
   }
 
   /**
-   * Inicia sesión con Microsoft Entra ID.
+   * Inicia sesión con Microsoft Entra ID y solicita los permisos configurados.
    */
   login(role?: AppRole): void {
     if (role) {
@@ -281,7 +282,7 @@ export class AuthService implements OnDestroy {
   }
 
   /**
-   * Cierra la sesión.
+   * Cierra la sesión y elimina el rol persistido en el navegador.
    */
   logout(): void {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {

@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Implementa la administración del catálogo de recursos y su stock disponible.
+ * Cada operación relevante publica un evento Kafka para auditoría y reportes.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,6 +32,7 @@ public class ResourceService {
     @Value("${campuslab.kafka.topics.booking-events:bookings.events}")
     private String bookingEventsTopic;
 
+    /** Crea un recurso con stock inicial y publica un evento de catálogo. */
     @Transactional
     public ResourceResponse createResource(CreateResourceRequest request) {
         String correlationId = "resource-create-" + System.currentTimeMillis();
@@ -39,7 +44,7 @@ public class ResourceService {
             if (resourceRepository.findByCode(generatedCode).isPresent()) {
                 throw new IllegalArgumentException("Ya existe un recurso con el código: " + generatedCode);
             }
-
+            /* Formato de recurso */
             Resource resource = Resource.builder()
                     .code(generatedCode)
                     .name(request.getName())
@@ -49,7 +54,7 @@ public class ResourceService {
                     .availableStock(request.getTotalStock())
                     .active(true)
                     .build();
-
+            /*Respuesta de los recursos a kafka como evento */
             ResourceResponse response = mapToResponse(resourceRepository.save(resource));
             publishKafkaEvent("RESOURCE_CREATED", buildResourcePayload(response, "SUCCESS", "Recurso creado correctamente"), correlationId);
             return response;
@@ -63,6 +68,7 @@ public class ResourceService {
         }
     }
 
+    /** Ajusta el stock disponible sin permitir exceder el stock total ni valores negativos. */
     @Transactional
     public ResourceResponse updateStock(Long id, UpdateStockRequest request) {
         String correlationId = "resource-stock-" + id;
@@ -92,6 +98,7 @@ public class ResourceService {
         }
     }
 
+    /** Actualiza datos y stock total de un recurso existente. */
     @Transactional
     public ResourceResponse updateResource(Long id, UpdateResourceRequest request) {
         String correlationId = "resource-update-" + id;
@@ -116,6 +123,7 @@ public class ResourceService {
         }
     }
 
+    /** Desactiva un recurso para conservar su historial sin eliminarlo físicamente. */
     @Transactional
     public ResourceResponse deleteResource(Long id) {
         String correlationId = "resource-delete-" + id;
@@ -131,7 +139,7 @@ public class ResourceService {
             throw e;
         }
     }
-
+/* Obtiene lista de los recursos  */
     public List<ResourceResponse> getAllResources() {
         return resourceRepository.findByActiveTrue()
                 .stream()

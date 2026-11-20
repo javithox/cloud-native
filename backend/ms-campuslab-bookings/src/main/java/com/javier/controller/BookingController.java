@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Expone las operaciones HTTP para consultar y administrar reservas.
+ */
 @RestController
 @RequestMapping(path = {"/api/bookings", "/api/bookings/"})
 @RequiredArgsConstructor

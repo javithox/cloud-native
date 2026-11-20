@@ -40,6 +40,9 @@ export interface AuditTimelineEvent {
   isError?: boolean;
 }
 
+/**
+ * Centraliza las llamadas HTTP a reservas, catálogo, reportes y auditoría.
+ */
 @Injectable({ providedIn: 'root' })
 export class CampusLabApiService {
   private readonly http = inject(HttpClient);
@@ -54,6 +57,7 @@ export class CampusLabApiService {
     return `${normalizedBase}${normalizedPath}`;
   }
 
+  /** Obtiene reservas, opcionalmente filtradas por estado. */
   bookings(status?: string): Observable<Booking[]> {
     let params = new HttpParams();
     if (status) params = params.set('status', status);
@@ -68,6 +72,7 @@ export class CampusLabApiService {
     return this.http.get<Booking>(this.endpoint(this.bookingsUrl, `/${id}`));
   }
 
+  /** Crea una reserva y normaliza el identificador del estudiante si falta. */
   createBooking(payload: {
     studentId?: string;
     studentEmail: string;
@@ -88,6 +93,7 @@ export class CampusLabApiService {
     return this.http.delete<Booking>(this.endpoint(this.bookingsUrl, `/${id}`));
   }
 
+  /** Obtiene los recursos disponibles del catálogo. */
   resources(): Observable<Resource[]> {
     return this.http.get<Resource[]>(this.endpoint(this.catalogUrl, '/resources'));
   }

@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Guarda eventos recibidos desde Kafka y permite consultar la trazabilidad.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

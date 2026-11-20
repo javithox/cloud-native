@@ -3,6 +3,9 @@ import { Router } from '@angular/router';
 import { CampusLabApiService, Resource } from '../../services/campuslab-api.service';
 import { ToastService } from '../../services/toast.service';
 
+/**
+ * Presenta el catálogo de recursos y coordina crear, editar y desactivar recursos.
+ */
 @Component({
   selector: 'app-catalog-page',
   standalone: true,

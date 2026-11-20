@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Escucha comandos RabbitMQ y procesa notificaciones, preparación y vouchers.
+ * Los mensajes que fallan pueden llegar a las colas de mensajes muertos (DLQ).
+ */
 @Component
 @Slf4j
 public class NotificationListener {

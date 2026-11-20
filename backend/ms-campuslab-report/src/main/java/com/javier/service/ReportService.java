@@ -25,18 +25,22 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Consume eventos de reservas y calcula métricas y KPI para reportería.
+ * Evita procesar dos veces el mismo evento mediante su identificador.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ReportService {
-
+    /* Carga de patrones de tiempos y formatos de la zona horaria */
     private static final Pattern RANGE = Pattern.compile("last(\\d+)(h|d)", Pattern.CASE_INSENSITIVE);
     private static final DateTimeFormatter HOUR = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00").withZone(ZoneId.of("UTC"));
-
+    /*Mapeo de los eventos y metricas */
     private final ReportMetricRepository reportMetricRepository;
     private final ProcessedReportEventRepository processedReportEventRepository;
     private final ObjectMapper objectMapper;
-
+    /*Servicio de consumo de reportes para darle formato json en kafka */
     @Transactional
     public void consumeBookingEvent(String payload) {
         final JsonNode envelope;

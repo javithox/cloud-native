@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Contiene la lógica de negocio para crear, consultar y cambiar reservas.
+ * Coordina persistencia, catálogo, Kafka y RabbitMQ.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -36,6 +40,7 @@ public class BookingService {
     @Value("${campuslab.kafka.topics.booking-events:bookings.events}")
     private String bookingEventsTopic;
 
+    /** Valida y crea una reserva, y publica el evento correspondiente. */
     @Transactional
     public BookingResponse createBooking(CreateBookingRequest request) {
         String correlationId = "booking-create-" + request.getResourceId() + "-" + System.currentTimeMillis();
@@ -74,6 +79,7 @@ public class BookingService {
         }
     }
 
+    /** Valida la transición de estado, ajusta stock y dispara efectos secundarios. */
     @Transactional
     public BookingResponse updateBookingStatus(Long id, UpdateStatusRequest request) {
         String correlationId = "booking-status-" + id;
@@ -112,6 +118,7 @@ public class BookingService {
         }
     }
 
+    /** Cancela una reserva como eliminación lógica y registra el evento. */
     @Transactional
     public BookingResponse deleteBooking(Long id) {
         String correlationId = "booking-delete-" + id;
@@ -132,12 +139,14 @@ public class BookingService {
         }
     }
 
+    /** Busca una reserva por identificador y la convierte a su DTO de respuesta. */
     public BookingResponse getBookingById(Long id) {
         return bookingRepository.findById(id)
                 .map(this::mapToResponse)
                 .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada con ID: " + id));
     }
 
+    /** Lista reservas aplicando filtros opcionales de estado y rango de fechas. */
     public List<BookingResponse> getBookings(BookingStatus status, LocalDateTime from, LocalDateTime to) {
         List<Booking> bookings;
         if (status != null && from != null && to != null) {
@@ -176,11 +185,11 @@ public class BookingService {
             default -> log.info("Estado {} no requiere comandos RabbitMQ adicionales.", newStatus);
         }
     }
-
+/* Mapeo de rabbitmq para eventos */
     private void sendRabbitCommand(String routingKey, Object payload) {
         rabbitTemplate.convertAndSend(directExchange, routingKey, payload);
     }
-
+/* Kafka para publica los eventos por la id-CORRELACIÓN */
     private void publishKafkaEvent(String eventType, Object payload, String correlationId) {
         try {
             EventEnvelope<Object> envelope = EventEnvelope.create(eventType, correlationId, payload);
@@ -190,7 +199,7 @@ public class BookingService {
             log.error("Error al publicar evento en Kafka para {} con correlationId {}", eventType, correlationId, e);
         }
     }
-
+/*Formato de payload para errores en reservas */
     private java.util.Map<String, Object> buildBookingErrorPayload(Long resourceId, String user, String message) {
         java.util.Map<String, Object> payload = new java.util.HashMap<>();
         payload.put("resourceId", resourceId);
@@ -201,7 +210,7 @@ public class BookingService {
         payload.put("error", true);
         return payload;
     }
-
+/*Seteo de formato payload de las reservas */
     private BookingResponse mapToResponse(Booking booking) {
         BookingResponse res = new BookingResponse();
         res.setId(booking.getId());

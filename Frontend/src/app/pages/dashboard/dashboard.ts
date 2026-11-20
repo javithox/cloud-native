@@ -21,6 +21,10 @@ interface ResourceUsageChartItem {
   color: string;
 }
 
+/**
+ * Muestra métricas, gráficas y acciones adaptadas al rol del usuario.
+ * Actualiza los datos periódicamente mientras la página está activa.
+ */
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,

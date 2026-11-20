@@ -12,6 +12,9 @@ import { ToastService } from '../../services/toast.service';
   templateUrl: './bookings.html',
   styleUrl: './bookings.scss',
 })
+/**
+ * Presenta el listado de reservas y permite aprobar o cancelar según permisos.
+ */
 export class BookingsPage implements OnInit {
   private readonly api = inject(CampusLabApiService);
   private readonly authService = inject(AuthService);
@@ -69,7 +72,9 @@ export class BookingsPage implements OnInit {
     this.confirmAction = { type: 'approve', booking };
     this.error = '';
   }
-
+  /**
+   * Cancelación de una reserva. segun el estado de reserva se pueden cancelar
+   */
   requestCancelBooking(booking: Booking): void {
     const cancellableStatuses = ['SOLICITADA', 'APROBADA', 'EN_PREPARACION'];
 

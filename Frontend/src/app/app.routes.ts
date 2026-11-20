@@ -9,6 +9,7 @@ import { DashboardPage } from './pages/dashboard/dashboard';
 import { LoginPage } from './pages/login/login';
 import { ReportsPage } from './pages/reports/reports';
 
+/** Rutas públicas y privadas de la aplicación, con permisos por rol. */
 export const routes: Routes = [
   { path: 'login', component: LoginPage },
   {

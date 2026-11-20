@@ -54,7 +54,7 @@ public class SecurityConfig {
 
     @Bean
     JwtDecoder jwtDecoder(
-            @Value("${TENANT_ID:00000000-0000-0000-0000-000000000000}") String tenantId,
+            @Value("${TENANT_ID:bda559f7-26d8-4062-88a2-da66f2286b5f}") String tenantId,
             @Value("${campuslab.security.jwt.audience}") String audience,
             @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String issuer) {
         String jwks = "https://login.microsoftonline.com/" + tenantId + "/discovery/v2.0/keys";

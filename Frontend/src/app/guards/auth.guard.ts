@@ -3,6 +3,9 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { AppRole } from '../services/role-permissions';
 
+/**
+ * Bloquea rutas privadas si el usuario no inició sesión o no tiene el rol permitido.
+ */
 export const AuthGuard: CanActivateFn = (route) => {
   const authService = inject(AuthService);
   const router = inject(Router);

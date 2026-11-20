@@ -11,6 +11,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Consumidor Kafka que registra en la base de auditoría los eventos del dominio.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
