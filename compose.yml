@@ -68,7 +68,7 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: campuslab-kafka-ui
     ports:
-      - "127.0.0.1:${KAFKA_UI_PORT:-8088}:8080"
+      - "{KAFKA_UI_PORT:-8088}:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: campuslab-local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
@@ -200,7 +200,7 @@ services:
       RABBITMQ_ADMIN_BASE_URL: http://ms-campuslab-rabbitmq-admin:8086
       KAFKA_ADMIN_BASE_URL: http://ms-campuslab-kafka-admin:8087
     ports:
-      - "172.31.46.148:${BFF_PORT:-8090}:8090"
+      - "{BFF_PORT:-8090}:8090"
     depends_on:
       - ms-campuslab-bookings
       - ms-campuslab-catalog
@@ -252,7 +252,7 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
     ports:
-      - "${FRONTEND_PORT:-4200}:4200"
+      - "{FRONTEND_PORT:-4200}:4200"
     environment:
       API_CATALOG_URL: ${API_CATALOG_URL:-/api/catalog/}
       API_BOOKINGS_URL: ${API_BOOKINGS_URL:-/api/bookings/}
