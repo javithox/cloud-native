@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-campuslab}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copia .env.example a .env y define POSTGRES_PASSWORD}
     ports:
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ./docker/postgres/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql:ro
       - postgres_data:/var/lib/postgresql/data
@@ -31,8 +31,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-campuslab}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Define RABBITMQ_PASSWORD en .env}
     ports:
-      - "127.0.0.1:${RABBITMQ_PORT:-5672}:5672"
-      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -68,7 +68,7 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: campuslab-kafka-ui
     ports:
-      - "{KAFKA_UI_PORT:-8088}:8080"
+      - "${KAFKA_UI_PORT:-8088}:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: campuslab-local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
